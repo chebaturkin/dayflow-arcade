@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE6">
+  <meta name="description" content="линия дня — календарь одного дня, который хранится в браузере.">
+  <title>линия дня — календарь</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-mode="calm">
+  <a class="skip-link" href="#main-content">к содержимому</a>
+  <div class="site-shell">
+    <header class="masthead">
+      <div class="brand-block"><h1>линия дня</h1><span class="brand-note">календарь</span></div>
+      <div class="status-board" role="status" aria-live="polite" aria-label="статус дня">
+        <span class="status-board-display" aria-hidden="true"><span class="status-board-mark"></span>линия дня</span>
+        <span id="board-status" class="sr-only">день загружается</span>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="command-deck" aria-labelledby="controls-title">
+        <div class="section-kicker"><h2 id="controls-title">настройки дня</h2></div>
+        <div class="control-grid">
+          <div class="control-group date-control">
+            <label for="day-picker">дата</label>
+            <input id="day-picker" name="day" type="date">
+          </div>
+          <div class="control-group zone-control">
+            <label for="timezone-picker">часовой пояс</label>
+            <select id="timezone-picker" name="timezone">
+              <option value="local">местный пояс</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <div class="control-group mode-control">
+            <span class="field-label">режим</span>
+            <div class="mode-switch" role="group" aria-label="режим отображения">
+              <button type="button" class="mode-button is-active" data-mode-choice="calm" aria-pressed="true">спокойный</button>
+              <button type="button" class="mode-button" data-mode-choice="arcade" aria-pressed="false">аркадный</button>
+            </div>
+          </div>
+          <div class="control-group export-control">
+            <span class="field-label">скачать</span>
+            <div class="export-actions">
+              <button type="button" class="button button-dark" id="export-svg" aria-label="скачать SVG">SVG</button>
+              <button type="button" class="button button-cobalt" id="export-png" aria-label="скачать PNG">PNG</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="import-deck" aria-labelledby="import-title">
+        <div class="section-kicker"><h2 id="import-title">добавить в день</h2></div>
+        <div class="import-layout">
+          <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="выбрать ICS-файл" aria-controls="ics-file" aria-describedby="drop-help">
+            <div>
+              <strong>выбрать ICS</strong>
+              <p id="drop-help">перетащите файл сюда или выберите его на компьютере</p>
+            </div>
+            <span class="button button-paper file-button" aria-hidden="true">выбрать файл</span>
+            <input id="ics-file" type="file" accept=".ics,text/calendar,text/plain" hidden>
+          </div>
+          <div class="quick-actions">
+            <button type="button" class="button button-paper" id="load-demo">загрузить пример</button>
+            <button type="button" class="button button-red" id="open-manual">добавить событие</button>
+          </div>
+        </div>
+        <div class="message-stack" id="message-stack" aria-live="polite"></div>
+      </section>
+
+      <section class="scoreboard" aria-labelledby="score-title">
+        <div class="score-main">
+          <div class="section-kicker"><h2 id="score-title">день</h2></div>
+          <div class="day-readout">
+            <div>
+              <p class="eyebrow" id="readout-weekday">сегодня</p>
+              <div class="big-date" id="readout-date">—</div>
+            </div>
+            <div class="now-readout">
+              <span class="eyebrow">сейчас</span>
+              <strong id="readout-now">--:--</strong>
+            </div>
+          </div>
+        </div>
+        <dl class="metrics" aria-label="метрики дня">
+          <div class="metric"><dt>события</dt><dd id="metric-events">00</dd></div>
+          <div class="metric"><dt>готово</dt><dd id="metric-done">00</dd></div>
+          <div class="metric"><dt>занято</dt><dd id="metric-busy">00<span class="metric-unit">ч</span></dd></div>
+          <div class="metric metric-free"><dt>свободно</dt><dd id="metric-free">24<span class="metric-unit">ч</span></dd></div>
+        </dl>
+      </section>
+
+      <section class="route-panel" aria-labelledby="route-title">
+        <div class="section-kicker"><h2 id="route-title">трасса дня</h2><span class="section-note" id="route-note">24 часа</span></div>
+        <div class="route-viewport" id="route-viewport" role="region" tabindex="0" aria-label="линия событий за день" aria-describedby="route-help route-summary">
+          <p id="route-help" class="sr-only">горизонтальная шкала: прокрутите влево или вправо, чтобы увидеть день от 00:00 до 24:00.</p>
+          <p id="route-summary" class="sr-only">события расположены по времени, свободные окна отмечены зелёным, текущий момент — красной линией.</p>
+          <div class="route-stage" id="route-stage">
+            <div class="route-axis" id="route-axis" role="img" aria-label="шкала времени от 00:00 до 24:00"></div>
+            <div class="route-grid-lines" id="route-grid-lines" aria-hidden="true"></div>
+            <div class="all-day-row" id="all-day-row" role="region" aria-label="события на весь день"></div>
+            <div class="free-row" id="free-row" role="region" aria-label="свободные окна"></div>
+            <div class="event-lanes" id="event-lanes" role="list" aria-label="события по времени"></div>
+            <div class="now-line" id="now-line" hidden><span>сейчас</span></div>
+          </div>
+        </div>
+        <ul class="route-legend" aria-label="легенда трассы">
+          <li><i class="legend-swatch swatch-station" aria-hidden="true"></i>событие</li>
+          <li><i class="legend-swatch swatch-free" aria-hidden="true"></i>свободно</li>
+          <li><i class="legend-swatch swatch-now" aria-hidden="true"></i>сейчас</li>
+          <li><i class="legend-token" aria-hidden="true"></i>готово</li>
+        </ul>
+      </section>
+
+      <section class="details-panel" id="details-panel" aria-labelledby="details-title">
+        <div class="section-kicker"><h2 id="details-title">детали</h2></div>
+        <div id="details-empty" class="details-empty">выберите событие на линии времени — здесь появится его расписание.</div>
+        <article id="event-details" class="event-details" hidden>
+          <div class="details-header">
+            <div>
+              <p class="eyebrow" id="detail-source">ics / событие</p>
+              <h3 id="detail-title">—</h3>
+            </div>
+            <span class="detail-token" id="detail-token" aria-hidden="true">01</span>
+          </div>
+          <div class="detail-grid">
+            <div><span class="detail-label">время в дне</span><strong id="detail-time">—</strong><span id="detail-clip-note" class="detail-subvalue"></span></div>
+            <div><span class="detail-label">длительность</span><strong id="detail-duration">—</strong></div>
+            <div><span class="detail-label">место</span><strong id="detail-location">—</strong></div>
+            <div><span class="detail-label">повтор</span><strong id="detail-repeat">—</strong></div>
+          </div>
+          <div class="detail-original-time" aria-live="polite"><span class="detail-label">исходное время</span><strong id="detail-original-time">—</strong></div>
+          <p id="detail-description" class="detail-description"></p>
+          <div class="detail-actions">
+            <button type="button" class="button button-cobalt" id="toggle-complete">отметить выполненным</button>
+            <button type="button" class="button button-paper" id="edit-event" aria-label="изменить выбранное событие">изменить</button>
+            <button type="button" class="button button-paper button-danger" id="delete-event" aria-label="удалить выбранное событие">удалить</button>
+            <span id="detail-status" class="detail-status"></span>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="manual-dialog" class="manual-dialog" aria-labelledby="manual-title">
+    <form method="dialog" id="manual-form" aria-describedby="manual-form-error">
+      <div class="dialog-head"><div><p class="eyebrow">новая запись</p><h2 id="manual-title">добавить событие</h2></div><button type="button" class="icon-button" id="close-manual" aria-label="закрыть">×</button></div>
+      <div class="form-grid">
+        <label>название<input name="title" required maxlength="80" placeholder="например, глубокая работа…"></label>
+        <div class="form-pair"><label>начало<input name="start" type="time" required></label><label>конец<input name="end" type="time" required></label></div>
+        <label>место<input name="location" maxlength="100" placeholder="кабинет / ссылка / без места…"></label>
+        <label>заметка<textarea name="description" rows="3" maxlength="300" placeholder="что важно помнить…"></textarea></label>
+      </div>
+      <p id="manual-form-error" class="form-error" role="alert" aria-live="assertive"></p>
+      <div class="dialog-actions"><button type="button" class="button button-paper" id="cancel-manual">отмена</button><button type="submit" class="button button-red">добавить в день</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
