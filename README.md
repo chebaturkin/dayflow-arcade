@@ -89,7 +89,7 @@ END:VCALENDAR
 1. создайте репозиторий и отправьте содержимое проекта в ветку `main`;
 2. откройте **Settings → Pages** и в качестве источника выберите **GitHub Actions**;
 3. дождитесь workflow **publish to GitHub Pages** — он соберёт статический artifact и опубликует сайт;
-4. адрес будет выглядеть так: `https://<username>.github.io/<repository>/`.
+4. для этого репозитория страница доступна по адресу [`chebaturkin.github.io/dayflow-arcade`](https://chebaturkin.github.io/dayflow-arcade/).
 
 workflow лежит в `.github/workflows/pages.yml`. секреты, сборщик и backend для сайта не нужны.
 

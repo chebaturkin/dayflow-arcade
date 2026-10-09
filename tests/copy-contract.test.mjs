@@ -32,6 +32,7 @@ test('README stays portable and describes local-only data handling', async () =>
   assert.doesNotMatch(readme, /\/Users\/timofeychebaturkin/);
   assert.match(readme, /данные.*браузер/i);
   assert.match(readme, /github pages/i);
+  assert.match(readme, /https:\/\/chebaturkin\.github\.io\/dayflow-arcade\//);
 });
 
 test('GitHub Pages publication is wired for the static site', async () => {
