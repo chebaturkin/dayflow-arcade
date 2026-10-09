@@ -39,6 +39,7 @@ test('GitHub Pages publication is wired for the static site', async () => {
   const notFound = await read('404.html');
   assert.match(workflow, /actions\/upload-pages-artifact@v3/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
+  assert.match(workflow, /enablement:\s*true/);
   assert.match(workflow, /pages:\s*write/);
   assert.match(workflow, /id-token:\s*write/);
   assert.match(notFound, /href="index\.html"/);
