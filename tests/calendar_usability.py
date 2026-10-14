@@ -27,6 +27,7 @@ with sync_playwright() as p:
     def import_events(lines):
         text = 'BEGIN:VCALENDAR\nVERSION:2.0\n' + lines + '\nEND:VCALENDAR'
         page.locator('#ics-file').set_input_files({'name': 'test.ics', 'mimeType': 'text/calendar', 'buffer': text.encode()})
+        expect(page.locator('#drop-zone')).to_have_attribute('aria-busy', 'false')
 
     def screenshot(name):
         if args.screenshots:
@@ -49,7 +50,7 @@ with sync_playwright() as p:
     slot.click()
     page.locator('[name=title]').fill('работа в свободном окне')
     page.get_by_role('button', name='добавить в день', exact=True).click()
-    expect(page.locator('#detail-time')).to_have_text('10:30 — 11:30')
+    expect(page.locator('#detail-time')).to_have_text('10:30 - 11:30')
     expect(page.locator('.availability-slot[data-slot-start="630"]')).to_have_count(0)
     page.reload()
     choose_day(DAY)
@@ -76,7 +77,7 @@ with sync_playwright() as p:
     screenshot('recurring-dialog.png')
     page.locator('[name=title]').fill('обновлённая встреча')
     page.get_by_role('button', name='сохранить изменения').click()
-    expect(page.locator('#detail-time')).to_have_text('12:00 — 13:00')
+    expect(page.locator('#detail-time')).to_have_text('12:00 - 13:00')
     expect(page.locator('#metric-done')).to_have_text('01')
     page.locator('#next-day').click()
     expect(page.locator('.agenda-name')).to_have_text('повторяющаяся встреча')
@@ -114,7 +115,7 @@ with sync_playwright() as p:
     expect(page.locator('#manual-dialog')).to_be_visible()
     page.locator('[name=endDate]').fill('2026-10-15')
     page.get_by_role('button', name='добавить в день', exact=True).click()
-    expect(page.locator('#detail-time')).to_have_text('23:30 — 24:00')
+    expect(page.locator('#detail-time')).to_have_text('23:30 - 24:00')
     page.locator('#next-day').click()
     page.locator('.agenda-select').filter(has_text='ночная работа').click()
     page.locator('#edit-event').click()
@@ -123,7 +124,7 @@ with sync_playwright() as p:
     expect(page.locator('[name=start]')).to_have_value('23:30')
     page.locator('[name=title]').fill('ночная работа · правка')
     page.get_by_role('button', name='сохранить изменения').click()
-    expect(page.locator('#detail-time')).to_have_text('00:00 — 00:30')
+    expect(page.locator('#detail-time')).to_have_text('00:00 - 00:30')
 
     # No zero-size slot and no invalid 24:00 time in the form.
     choose_day(DAY)
@@ -166,11 +167,11 @@ with sync_playwright() as p:
     other.wait_for_load_state('networkidle')
     other.locator('#ics-file').set_input_files({'name': 'other.ics', 'mimeType': 'text/calendar', 'buffer':
         b'BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:other-tab\nDTSTART:20261014T120000\nDTEND:20261014T130000\nSUMMARY:other tab\nEND:VEVENT\nEND:VCALENDAR'})
-    expect(page.locator('.agenda-name')).to_have_text('other tab')
+    expect(page.locator('.agenda-name')).to_have_text(['other tab'])
     page.locator('[name=title]').fill('устаревшая правка')
     page.get_by_role('button', name='сохранить изменения').click()
     expect(page.locator('#manual-form-error')).to_contain_text('событие не найдено')
-    expect(page.locator('.agenda-name')).to_have_text('other tab')
+    expect(page.locator('.agenda-name')).to_have_text(['other tab'])
     page.keyboard.press('Escape')
     expect(page.locator('#open-manual')).to_be_focused()
     other.close()

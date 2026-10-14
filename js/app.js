@@ -351,13 +351,13 @@ function createStation(event, index) {
   station.className = `station${event.completed ? ' is-complete' : ''}${event.overlap ? ' is-overlap' : ''}${state.selectedEventId === event.id ? ' is-selected' : ''}`;
   station.dataset.eventId = event.id;
   station.dataset.surface = 'route';
-  station.title = `${event.title} · ${formatMinutes(event.startMinute)}–${formatMinutes(event.endMinute)}`;
+  station.title = `${event.title} · ${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`;
   station.style.left = pct(event.startMinute);
   if (event.duration < 30) station.classList.add('is-compact');
   station.style.width = `${Math.max((event.duration / 1440) * 100, .7)}%`;
   station.style.setProperty('--station-min-width', event.duration < 30 ? '28px' : '34px');
   station.setAttribute('aria-pressed', String(state.selectedEventId === event.id));
-  station.setAttribute('aria-label', `${event.title}, ${formatMinutes(event.startMinute)}–${formatMinutes(event.endMinute)}`);
+  station.setAttribute('aria-label', `${event.title}, ${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`);
   const token = document.createElement('span');
   token.className = 'station-token';
   token.textContent = event.completed ? '✓' : String(index + 1).padStart(2, '0');
@@ -368,7 +368,7 @@ function createStation(event, index) {
   title.textContent = event.title || 'без названия';
   const time = document.createElement('span');
   time.className = 'station-time';
-  time.textContent = `${formatMinutes(event.startMinute)}–${formatMinutes(event.endMinute)}`;
+  time.textContent = `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`;
   copy.append(title, time);
   station.append(token, copy);
   station.addEventListener('click', () => selectEvent(event.id, 'route'));
@@ -415,8 +415,8 @@ function renderRoute() {
     item.style.left = pct(window.startMinute);
     item.style.width = `${Math.max((window.duration / 1440) * 100, .8)}%`;
     item.textContent = durationText(window.duration);
-    item.title = `${formatMinutes(window.startMinute)} — ${formatMinutes(window.endMinute)} · ${durationText(window.duration)}`;
-    item.setAttribute('aria-label', `добавить событие в свободное окно ${formatMinutes(window.startMinute)}–${formatMinutes(window.endMinute)}`);
+    item.title = `${formatMinutes(window.startMinute)} - ${formatMinutes(window.endMinute)} · ${durationText(window.duration)}`;
+    item.setAttribute('aria-label', `добавить событие в свободное окно ${formatMinutes(window.startMinute)} - ${formatMinutes(window.endMinute)}`);
     item.addEventListener('click', () => openSlot(window));
     freeChildren.push(item);
   });
@@ -450,9 +450,9 @@ function renderAvailability() {
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'availability-slot';
     button.dataset.slotStart = window.startMinute;
-    button.setAttribute('aria-label', `добавить событие ${formatMinutes(window.startMinute)}–${formatMinutes(window.slotEndMinute)}, свободно до ${formatMinutes(window.endMinute)}`);
+    button.setAttribute('aria-label', `добавить событие ${formatMinutes(window.startMinute)} - ${formatMinutes(window.slotEndMinute)}, свободно до ${formatMinutes(window.endMinute)}`);
     const range = document.createElement('span'); range.className = 'availability-time';
-    range.textContent = `${formatMinutes(window.startMinute)}–${formatMinutes(window.endMinute)}`;
+    range.textContent = `${formatMinutes(window.startMinute)} - ${formatMinutes(window.endMinute)}`;
     const duration = document.createElement('span'); duration.className = 'availability-duration';
     duration.textContent = durationText(window.duration);
     button.append(range, duration);
@@ -587,7 +587,7 @@ function renderEventState() {
       node.classList.toggle('is-selected', selected);
       if (surface === 'route') {
         node.classList.toggle('is-complete', event.completed);
-        node.setAttribute('aria-label', `${event.title || 'без названия'}, ${event.allDay ? 'весь день' : `${formatMinutes(event.startMinute)}–${formatMinutes(event.endMinute)}`}${event.completed ? ', выполнено' : ''}`);
+        node.setAttribute('aria-label', `${event.title || 'без названия'}, ${event.allDay ? 'весь день' : `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`}${event.completed ? ', выполнено' : ''}`);
         if (event.allDay) setText(node, `${event.completed ? '✓ ' : ''}${event.title}`);
         else setText(node.querySelector('.station-token'), event.completed ? '✓' : String(timedIndices.get(event.id) + 1).padStart(2, '0'));
       }
@@ -605,18 +605,18 @@ function renderDetails() {
   setText($('detail-source'), sourceLabel(selected.source));
   setText($('detail-title'), selected.title || 'без названия');
   setText($('detail-token'), selected.completed ? '✓' : String((state.projection.events.indexOf(selected) + 1)).padStart(2, '0'));
-  setText($('detail-time'), selected.allDay ? 'весь день' : `${formatMinutes(selected.startMinute)} — ${formatMinutes(selected.endMinute)}`);
+  setText($('detail-time'), selected.allDay ? 'весь день' : `${formatMinutes(selected.startMinute)} - ${formatMinutes(selected.endMinute)}`);
   const originalStart = selected.originalStart || '';
   const originalEnd = selected.originalEnd || '';
-  setText($('detail-original-time'), originalStart && originalEnd ? `${originalStart} — ${originalEnd}` : (selected.allDay ? 'весь день' : '—'));
+  setText($('detail-original-time'), originalStart && originalEnd ? `${originalStart} - ${originalEnd}` : (selected.allDay ? 'весь день' : 'не указано'));
   setText($('detail-clip-note'), selected.clippedStart || selected.clippedEnd ? `обрезано границей дня${selected.clippedStart ? ' (начало)' : ''}${selected.clippedEnd ? ' (конец)' : ''}` : '');
   $('original-time-row').hidden = !selected.clippedStart && !selected.clippedEnd && selected.source !== 'ics';
   setText($('detail-duration'), selected.allDay ? 'весь день' : durationText(selected.duration));
-  setText($('detail-location'), selected.location || '—');
+  setText($('detail-location'), selected.location || 'не указано');
   setText($('detail-repeat'), selected.recurrence?.raw || selected.recurrence || (selected.allDay ? 'весь день' : 'однократно'));
   setText($('detail-description'), selected.description || '');
   setText($('toggle-complete'), selected.completed ? 'вернуть в день' : 'отметить выполненным');
-  setText($('detail-status'), selected.completed ? 'выполнено' : selected.overlap ? 'пересечение — проверьте порядок' : 'впереди');
+  setText($('detail-status'), selected.completed ? 'выполнено' : selected.overlap ? 'пересечение. проверьте порядок' : 'впереди');
   $('edit-event').hidden = Boolean(selected.allDay);
   $('delete-event').hidden = false;
 }
@@ -674,7 +674,7 @@ async function handleFile(file) {
   const request = ++importRequest;
   try {
     if (typeof File !== 'undefined' && !(file instanceof File)) { showMessage('не удалось прочитать этот файл. выберите ics.', true); return; }
-    if (Number(file.size) > MAX_IMPORT_BYTES) { showMessage('файл больше 2 МБ. выберите файл поменьше.', true); announceAction('файл слишком большой.', true); return; }
+    if (Number(file.size) > MAX_IMPORT_BYTES) { showMessage('файл больше 2 мб. выберите файл поменьше.', true); announceAction('файл слишком большой.', true); return; }
     setImportBusy(true);
     const text = await file.text();
     if (request !== importRequest) return;
@@ -819,7 +819,7 @@ function buildExportSvg() {
   const height = Math.max(900, listTop + Math.ceil(projection.events.length / 2) * 62 + 100);
   const x = minute => left + clamp(minute, 0, 1440) / 1440 * chartWidth;
   const parts = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="dayflow arcade — ${escXml(formatDay())}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="dayflow arcade, ${escXml(formatDay())}">`,
     `<rect width="${width}" height="${height}" fill="#F8F6F0"/>`,
     `<style>text{font-family:sans-serif;fill:#242821}.mono{font-family:monospace}.muted{fill:#74786e}.chart{fill:#B6BCAD}.small{font-size:16px}.title{font-size:24px}</style>`,
     `<g transform="translate(64 40)"><rect width="48" height="48" rx="13" fill="#E96840"/><g transform="scale(.75)"><path d="M19 44V19h13c10 0 17 7 17 16S42 51 32 51H19" fill="none" stroke="#242821" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 35h23" stroke="#F8F6F0" stroke-width="6" stroke-linecap="round"/><circle cx="35" cy="35" r="5" fill="#F8F6F0"/></g></g>`,
@@ -843,14 +843,14 @@ function buildExportSvg() {
   projection.freeWindows.forEach(window => parts.push(`<rect x="${x(window.startMinute)}" y="${timedTop}" width="${x(window.endMinute) - x(window.startMinute)}" height="${chartBottom - timedTop - 18}" fill="#C8DD9B" opacity=".06"/>`));
   projection.timedEvents.forEach((event, index) => {
     const y = timedTop + 16 + (event.lane || 0) * 76, eventX = x(event.startMinute), eventWidth = Math.max(10, x(event.endMinute) - eventX);
-    parts.push(`<clipPath id="event-${index}"><rect x="${eventX + 7}" y="${y}" width="${Math.max(0, eventWidth - 14)}" height="52"/></clipPath>`, `<rect x="${eventX}" y="${y}" width="${eventWidth}" height="52" rx="5" fill="${event.completed ? '#C8DD9B' : '#EFEEDE'}"/>`, `<rect x="${eventX}" y="${y}" width="3" height="52" fill="${event.overlap ? '#E96840' : '#B6C7A0'}"/>`, `<g clip-path="url(#event-${index})"><text x="${eventX + 9}" y="${y + 23}" class="small">${escXml(event.title)}</text><text x="${eventX + 9}" y="${y + 42}" class="mono" font-size="11">${formatMinutes(event.startMinute)}–${formatMinutes(event.endMinute)}</text></g>`);
+    parts.push(`<clipPath id="event-${index}"><rect x="${eventX + 7}" y="${y}" width="${Math.max(0, eventWidth - 14)}" height="52"/></clipPath>`, `<rect x="${eventX}" y="${y}" width="${eventWidth}" height="52" rx="5" fill="${event.completed ? '#C8DD9B' : '#EFEEDE'}"/>`, `<rect x="${eventX}" y="${y}" width="3" height="52" fill="${event.overlap ? '#E96840' : '#B6C7A0'}"/>`, `<g clip-path="url(#event-${index})"><text x="${eventX + 9}" y="${y + 23}" class="small">${escXml(event.title)}</text><text x="${eventX + 9}" y="${y + 42}" class="mono" font-size="11">${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}</text></g>`);
   });
   const minute = minuteNow();
   if (minute !== null) parts.push(`<line x1="${x(minute)}" y1="${chartTop + 38}" x2="${x(minute)}" y2="${chartBottom - 18}" stroke="#E96840" stroke-width="2"/>`);
   parts.push(`<text x="64" y="${listTop - 24}" class="title">события дня</text>`);
   projection.events.forEach((event, index) => {
     const column = index % 2, row = Math.floor(index / 2), listX = left + column * 756, y = listTop + row * 62;
-    parts.push(`<clipPath id="list-${index}"><rect x="${listX + 180}" y="${y - 23}" width="540" height="35"/></clipPath>`, `<line x1="${listX}" y1="${y + 24}" x2="${listX + 720}" y2="${y + 24}" stroke="#DEDFD5"/>`, `<text x="${listX}" y="${y}" class="mono small muted">${event.allDay ? 'весь день' : `${formatMinutes(event.startMinute)}–${formatMinutes(event.endMinute)}`}</text>`, `<text x="${listX + 180}" y="${y}" font-size="20" clip-path="url(#list-${index})">${event.completed ? '✓ ' : ''}${escXml(event.title)}</text>`);
+    parts.push(`<clipPath id="list-${index}"><rect x="${listX + 180}" y="${y - 23}" width="540" height="35"/></clipPath>`, `<line x1="${listX}" y1="${y + 24}" x2="${listX + 720}" y2="${y + 24}" stroke="#DEDFD5"/>`, `<text x="${listX}" y="${y}" class="mono small muted">${event.allDay ? 'весь день' : `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`}</text>`, `<text x="${listX + 180}" y="${y}" font-size="20" clip-path="url(#list-${index})">${event.completed ? '✓ ' : ''}${escXml(event.title)}</text>`);
   });
   if (!projection.events.length) parts.push(`<text x="64" y="${listTop}" class="small muted">день пока пуст</text>`);
   parts.push(`<text x="64" y="${height - 38}" class="small muted">весь день на одной шкале.</text>`, '</svg>');

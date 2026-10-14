@@ -1,9 +1,9 @@
-# Bundled fonts
+# локальные шрифты
 
-The static site bundles these Google Fonts so the interface keeps the same typography offline:
+шрифты из google fonts включены в проект, поэтому после загрузки интерфейс сохраняет типографику без сети:
 
-- PT Sans and PT Sans Narrow — Copyright © 2010–2024 ParaType, SIL Open Font License 1.1.
-- IBM Plex Mono — Copyright © 2017 IBM Corp., SIL Open Font License 1.1.
-- Archivo Narrow and Sometype Mono — SIL Open Font License 1.1.
+- pt sans и pt sans narrow: Copyright © 2010–2024 ParaType, SIL Open Font License 1.1.
+- ibm plex mono: Copyright © 2017 IBM Corp., SIL Open Font License 1.1.
+- archivo narrow и sometype mono: SIL Open Font License 1.1.
 
-License text: <https://scripts.sil.org/OFL>.
+[текст лицензии](https://scripts.sil.org/OFL).

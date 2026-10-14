@@ -128,7 +128,7 @@ with sync_playwright() as p:
         };
     }''')
     page.locator('[type="submit"]').click()
-    expect(page.locator('#detail-time')).to_have_text('14:00 — 15:00')
+    expect(page.locator('#detail-time')).to_have_text('14:00 - 15:00')
     assert record.bounding_box()['x'] > before['x']
     # Freeze just the decorative copy to verify the link exists, then resume.
     assert page.evaluate('''() => {

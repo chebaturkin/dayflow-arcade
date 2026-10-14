@@ -151,7 +151,7 @@ export function parseProperty(line) {
     if (ch === '"') quoted = !quoted;
     if (ch === ':' && !quoted) { index = i; break; }
   }
-  if (index < 1) throw new Error(`не понимаю строку ICS: ${line}`);
+  if (index < 1) throw new Error(`не удалось прочитать строку ics: ${line}`);
   const header = String(line).slice(0, index);
   const [namePart, ...paramParts] = splitHeader(header);
   const params = {};
@@ -238,7 +238,7 @@ export function parseIcs(input) {
     if (active) active.push(line);
   }
   if (active) errors.push('событие не завершено');
-  if (!blocks.length) { if (!/BEGIN:VCALENDAR/i.test(text)) errors.push('это не календарный ICS-файл'); else errors.push('в ICS нет событий'); }
+  if (!blocks.length) { if (!/BEGIN:VCALENDAR/i.test(text)) errors.push('это не календарный ics-файл'); else errors.push('в ics нет событий'); }
   const events = [];
   const usedIds = new Map();
   for (let blockIndex = 0; blockIndex < blocks.length; blockIndex += 1) {
@@ -256,7 +256,7 @@ export function parseIcs(input) {
       let end; let durationSeconds = null;
       if (endProp) {
         end = parseDateValue(endProp.rawValue, endProp.params);
-        if (end.allDay !== start.allDay) throw new Error('концы all-day и timed события смешаны');
+        if (end.allDay !== start.allDay) throw new Error('начало и конец события должны быть одного типа: со временем или на весь день');
       } else if (durationProp) {
         durationSeconds = parseDuration(durationProp.value);
         if (start.allDay) end = allDayDescriptor(addDays(start.dateKey, Math.ceil(durationSeconds / 86400)), start.zone);

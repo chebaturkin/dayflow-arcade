@@ -1,6 +1,7 @@
 """Capture the shipped interface with a fixed demo date for the README."""
 from datetime import datetime, timezone
 from pathlib import Path
+import os
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,7 +14,7 @@ with sync_playwright() as p:
     page = context.new_page()
     page.clock.install(time=datetime(2026, 10, 14, 7, 15, tzinfo=timezone.utc))
     page.emulate_media(reduced_motion='reduce')
-    page.goto('http://127.0.0.1:4173')
+    page.goto(os.environ.get('DAYFLOW_BASE_URL', 'http://127.0.0.1:4173'))
     page.wait_for_load_state('networkidle')
     page.evaluate('document.fonts.ready')
     page.locator('#load-demo').click()

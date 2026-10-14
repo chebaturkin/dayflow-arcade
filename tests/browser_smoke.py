@@ -54,7 +54,7 @@ with sync_playwright() as p:
     expect(station).to_be_visible()
     station.click()
     expect(page.locator("#event-details")).to_be_visible()
-    expect(page.locator("#detail-title")).not_to_have_text("—")
+    expect(page.locator("#detail-title")).not_to_have_text("без названия")
 
     page.get_by_role("button", name="отметить выполненным", exact=True).click()
     expect(page.get_by_role("button", name="вернуть в день", exact=True)).to_be_visible()
@@ -168,7 +168,7 @@ with sync_playwright() as p:
     # Upgrade calendars saved before there was a shared editable source.
     migration_context = browser.new_context()
     migration = migration_context.new_page()
-    migration.goto('http://127.0.0.1:4173')
+    migration.goto(BASE_URL)
     migration.wait_for_load_state('networkidle')
     migration.evaluate("""() => {
       const entry = (id, date) => ({id, title:id, source:'manual', start:date+'T12:00', end:date+'T13:00'});
@@ -227,11 +227,11 @@ with sync_playwright() as p:
     tabs_context = browser.new_context(viewport={"width": 1440, "height": 1000})
     tabs_context.set_default_timeout(60000)
     first = tabs_context.new_page()
-    first.goto('http://127.0.0.1:4173')
+    first.goto(BASE_URL)
     first.wait_for_load_state('networkidle')
     first.locator('#load-demo').click()
     second = tabs_context.new_page()
-    second.goto('http://127.0.0.1:4173')
+    second.goto(BASE_URL)
     second.wait_for_load_state('networkidle')
     second.locator('#next-day').click()
     first.bring_to_front()
