@@ -1,0 +1,192 @@
+"""Regression coverage for available slots and editing individual occurrences."""
+import argparse
+import os
+from pathlib import Path
+from playwright.sync_api import sync_playwright, expect
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--screenshots', type=Path)
+args = parser.parse_args()
+DAY = '2026-10-14'
+BASE_URL = os.environ.get('DAYFLOW_BASE_URL', 'http://127.0.0.1:4173')
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    context = browser.new_context(viewport={'width': 1440, 'height': 1000}, timezone_id='Europe/Moscow', locale='ru-RU')
+    page = context.new_page()
+    errors = []
+    page.on('pageerror', lambda error: errors.append(str(error)))
+    page.on('console', lambda message: errors.append(message.text) if message.type == 'error' else None)
+    page.goto(BASE_URL + '/index.html')
+    page.wait_for_load_state('networkidle')
+
+    def choose_day(day):
+        page.locator('#day-picker').fill(day)
+        page.locator('#day-picker').dispatch_event('change')
+
+    def import_events(lines):
+        text = 'BEGIN:VCALENDAR\nVERSION:2.0\n' + lines + '\nEND:VCALENDAR'
+        page.locator('#ics-file').set_input_files({'name': 'test.ics', 'mimeType': 'text/calendar', 'buffer': text.encode()})
+
+    def screenshot(name):
+        if args.screenshots:
+            args.screenshots.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(args.screenshots / name), full_page=True)
+
+    choose_day(DAY)
+    expect(page.locator('.availability-slot')).to_have_count(1)
+    page.locator('#load-demo').click()
+    page.locator('#slot-duration').select_option('60')
+    slot = page.locator('.availability-slot[data-slot-start="630"]')
+    slot.focus()
+    page.keyboard.press('Enter')
+    expect(page.locator('#manual-dialog')).to_be_visible()
+    expect(page.locator('[name=startDate]')).to_have_value(DAY)
+    expect(page.locator('[name=start]')).to_have_value('10:30')
+    expect(page.locator('[name=end]')).to_have_value('11:30')
+    page.keyboard.press('Escape')
+    expect(slot).to_be_focused()
+    slot.click()
+    page.locator('[name=title]').fill('работа в свободном окне')
+    page.get_by_role('button', name='добавить в день', exact=True).click()
+    expect(page.locator('#detail-time')).to_have_text('10:30 — 11:30')
+    expect(page.locator('.availability-slot[data-slot-start="630"]')).to_have_count(0)
+    page.reload()
+    choose_day(DAY)
+    expect(page.locator('.agenda-name').filter(has_text='работа в свободном окне')).to_have_count(1)
+    screenshot('availability.png')
+
+    # The timeline itself offers keyboard-accessible free-window buttons.
+    free = page.locator('.free-window').first
+    free.focus()
+    page.keyboard.press('Space')
+    expect(page.locator('#manual-dialog')).to_be_visible()
+    page.keyboard.press('Escape')
+    expect(free).to_be_focused()
+
+    page.locator('#timezone-picker').select_option('Europe/Moscow')
+    import_events('BEGIN:VEVENT\nUID:series\nDTSTART:20261014T090000Z\nDTEND:20261014T100000Z\n'
+                  'SUMMARY:повторяющаяся встреча\nRRULE:FREQ=DAILY;COUNT=3\nEND:VEVENT')
+    page.locator('.agenda-select').click()
+    page.locator('#toggle-complete').click()
+    page.locator('#edit-event').click()
+    expect(page.locator('[name=start]')).to_have_value('12:00')
+    expect(page.locator('[name=end]')).to_have_value('13:00')
+    expect(page.locator('#manual-context')).to_contain_text('только это повторение')
+    screenshot('recurring-dialog.png')
+    page.locator('[name=title]').fill('обновлённая встреча')
+    page.get_by_role('button', name='сохранить изменения').click()
+    expect(page.locator('#detail-time')).to_have_text('12:00 — 13:00')
+    expect(page.locator('#metric-done')).to_have_text('01')
+    page.locator('#next-day').click()
+    expect(page.locator('.agenda-name')).to_have_text('повторяющаяся встреча')
+    page.locator('#previous-day').click()
+    page.reload()
+    choose_day(DAY)
+    expect(page.locator('.agenda-name')).to_have_text('обновлённая встреча')
+    page.locator('.agenda-select').click()
+    page.on('dialog', lambda dialog: dialog.accept())
+    page.locator('#delete-event').click()
+    expect(page.locator('#agenda-count')).to_have_text('0')
+    page.locator('#next-day').click()
+    expect(page.locator('.agenda-name')).to_have_text('повторяющаяся встреча')
+    page.locator('#undo-action').click()
+    expect(page.locator('#day-picker')).to_have_value(DAY)
+    expect(page.locator('.agenda-name')).to_have_text('обновлённая встреча')
+
+    # Deleting an unmodified occurrence must preserve the series too.
+    page.locator('#next-day').click()
+    page.locator('.agenda-select').click()
+    page.locator('#delete-event').click()
+    expect(page.locator('#agenda-count')).to_have_text('0')
+    page.locator('#next-day').click()
+    expect(page.locator('.agenda-name')).to_have_text('повторяющаяся встреча')
+    page.locator('#undo-action').click()
+    expect(page.locator('.agenda-name')).to_have_text('повторяющаяся встреча')
+
+    choose_day(DAY)
+    page.locator('#open-manual').click()
+    page.locator('[name=title]').fill('ночная работа')
+    page.locator('[name=start]').fill('23:30')
+    page.locator('[name=end]').fill('00:30')
+    page.get_by_role('button', name='добавить в день', exact=True).click()
+    expect(page.locator('#manual-form-error')).to_contain_text('позже начала')
+    expect(page.locator('#manual-dialog')).to_be_visible()
+    page.locator('[name=endDate]').fill('2026-10-15')
+    page.get_by_role('button', name='добавить в день', exact=True).click()
+    expect(page.locator('#detail-time')).to_have_text('23:30 — 24:00')
+    page.locator('#next-day').click()
+    page.locator('.agenda-select').filter(has_text='ночная работа').click()
+    page.locator('#edit-event').click()
+    expect(page.locator('[name=startDate]')).to_have_value(DAY)
+    expect(page.locator('[name=endDate]')).to_have_value('2026-10-15')
+    expect(page.locator('[name=start]')).to_have_value('23:30')
+    page.locator('[name=title]').fill('ночная работа · правка')
+    page.get_by_role('button', name='сохранить изменения').click()
+    expect(page.locator('#detail-time')).to_have_text('00:00 — 00:30')
+
+    # No zero-size slot and no invalid 24:00 time in the form.
+    choose_day(DAY)
+    import_events('BEGIN:VEVENT\nUID:late\nSUMMARY:длинная запись\nDTSTART:20261014T000000\nDTEND:20261014T233000\nEND:VEVENT')
+    page.locator('#slot-duration').select_option('60')
+    expect(page.locator('.availability-slot')).to_have_count(0)
+    expect(page.locator('#availability-empty')).to_contain_text('60 мин')
+    page.locator('#slot-duration').select_option('30')
+    page.locator('.availability-slot').click()
+    expect(page.locator('[name=start]')).to_have_value('23:30')
+    expect(page.locator('[name=end]')).to_have_value('00:00')
+    expect(page.locator('[name=endDate]')).to_have_value('2026-10-15')
+    page.keyboard.press('Escape')
+    import_events('BEGIN:VEVENT\nUID:full\nSUMMARY:занято\nDTSTART:20261014T000000\nDTEND:20261015T000000\nEND:VEVENT')
+    expect(page.locator('.availability-slot')).to_have_count(0)
+    expect(page.locator('.free-window')).to_have_count(0)
+    expect(page.locator('#availability-empty')).to_contain_text('нет свободного окна')
+
+    page.locator('#load-demo').click()
+    for width in [390, 320]:
+        page.set_viewport_size({'width': width, 'height': 844})
+        assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth'), f'page overflow at {width}px'
+        expect(page.locator('.availability-slot').first).to_be_visible()
+        page.locator('.availability-slot').first.click()
+        expect(page.locator('[name=startDate]')).to_be_visible()
+        assert page.locator('#manual-dialog').evaluate('(el) => el.scrollWidth <= el.clientWidth')
+        screenshot(f'dialog-{width}.png')
+        page.keyboard.press('Escape')
+        screenshot(f'availability-{width}.png')
+    page.emulate_media(reduced_motion='reduce')
+    page.locator('[data-mode-choice=arcade]').click()
+    page.locator('.availability-slot').first.click()
+    page.keyboard.press('Escape')
+
+    # A replaced source in another tab cannot be overwritten by a stale form.
+    page.locator('.agenda-select').nth(1).click()
+    page.locator('#edit-event').click()
+    other = context.new_page()
+    other.goto(BASE_URL)
+    other.wait_for_load_state('networkidle')
+    other.locator('#ics-file').set_input_files({'name': 'other.ics', 'mimeType': 'text/calendar', 'buffer':
+        b'BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:other-tab\nDTSTART:20261014T120000\nDTEND:20261014T130000\nSUMMARY:other tab\nEND:VEVENT\nEND:VCALENDAR'})
+    expect(page.locator('.agenda-name')).to_have_text('other tab')
+    page.locator('[name=title]').fill('устаревшая правка')
+    page.get_by_role('button', name='сохранить изменения').click()
+    expect(page.locator('#manual-form-error')).to_contain_text('событие не найдено')
+    expect(page.locator('.agenda-name')).to_have_text('other tab')
+    page.keyboard.press('Escape')
+    expect(page.locator('#open-manual')).to_be_focused()
+    other.close()
+
+    touch_context = browser.new_context(viewport={'width': 320, 'height': 900}, has_touch=True, is_mobile=True, locale='ru-RU')
+    touch = touch_context.new_page()
+    touch.on('pageerror', lambda error: errors.append(str(error)))
+    touch.goto(BASE_URL)
+    touch.wait_for_load_state('networkidle')
+    touch.emulate_media(forced_colors='active')
+    touch.locator('.availability-slot').tap()
+    touch.locator('[name=title]').fill('запись с телефона')
+    touch.get_by_role('button', name='добавить в день', exact=True).tap()
+    expect(touch.locator('#agenda-count')).to_have_text('1')
+    assert touch.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    touch_context.close()
+    assert not errors, errors
+    browser.close()
+    print('calendar usability: PASS')

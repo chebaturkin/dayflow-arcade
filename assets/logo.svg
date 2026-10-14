@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>dayflow arcade — петля дня</title>
+  <rect width="64" height="64" rx="18" fill="#E96840"/>
+  <path d="M19 44V19h13c10 0 17 7 17 16S42 51 32 51H19" stroke="#242821" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 35h23" stroke="#F8F6F0" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="35" cy="35" r="5" fill="#F8F6F0"/>
+</svg>

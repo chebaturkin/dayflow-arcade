@@ -75,7 +75,7 @@ test('all-day DTEND is exclusive and missing DTEND means one day', () => {
   ));
   assert.equal(projectDay(result.events, DAY, ZONE).allDayEvents.length, 2);
   assert.equal(projectDay(result.events, '2026-10-09', ZONE).events.length, 0);
-  assert.equal(projectDay(result.events, DAY, ZONE).freeMinutes, 0, 'all-day events occupy the whole day');
+  assert.equal(projectDay(result.events, DAY, ZONE).freeMinutes, 1440, 'all-day notes do not block timed availability');
 });
 
 test('uses DURATION instead of DTEND', () => {
@@ -282,4 +282,25 @@ test('formatMinutes and demo provide readable valid data', () => {
 test('projection validates day and timezone before calculating', () => {
   assert.throws(() => projectDay([], '2026-02-30', ZONE), /дат/i);
   assert.throws(() => projectDay([], DAY, 'Fake/Zone'), /пояс/i);
+});
+
+
+test('all-day notes leave timed availability unchanged', () => {
+  const result = parseIcs(`BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:note
+DTSTART;VALUE=DATE:20261008
+SUMMARY:note
+END:VEVENT
+BEGIN:VEVENT
+UID:meeting
+DTSTART:20261008T090000
+DTEND:20261008T100000
+SUMMARY:meeting
+END:VEVENT
+END:VCALENDAR`);
+  const day = projectDay(result.events, '2026-10-08', 'UTC');
+  assert.equal(day.allDayEvents.length, 1);
+  assert.equal(day.occupiedMinutes, 60);
+  assert.equal(day.freeMinutes, 1380);
 });

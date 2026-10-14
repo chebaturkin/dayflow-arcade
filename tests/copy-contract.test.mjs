@@ -8,13 +8,13 @@ const read = (file) => readFile(new URL(file, root), 'utf8');
 
 test('published interface uses lowercase copy and keeps technical names intact', async () => {
   const html = await read('index.html');
-  assert.match(html, /<h1>линия дня<\/h1>/);
-  assert.match(html, /<h2 id="controls-title">настройки дня<\/h2>/);
-  assert.match(html, /<h2 id="import-title">добавить в день<\/h2>/);
-  assert.match(html, /<button[^>]+id="load-demo"[^>]*>загрузить пример<\/button>/);
-  assert.match(html, /<button[^>]+id="open-manual"[^>]*>добавить событие<\/button>/);
-  assert.match(html, /линия дня/);
-  assert.match(html, /\bICS\b/);
+  assert.match(html, /<h1>dayflow arcade<\/h1>/);
+  assert.match(html, /<h2 id="controls-title"[^>]*>настройки дня<\/h2>/);
+  assert.match(html, /<h2 id="import-title"[^>]*>добавить календарь<\/h2>/);
+  assert.match(html, /<button[^>]+id="load-demo"[^>]*>загрузить пример/);
+  assert.match(html, /id="open-manual"[\s\S]*?добавить событие<\/button>/);
+  assert.doesNotMatch(html, /линия дня/);
+  assert.match(html, /\.ics/);
   assert.doesNotMatch(html, />СЕГОДНЯ</);
   assert.doesNotMatch(html, />СЕЙЧАС</);
   assert.doesNotMatch(html, />НОВАЯ ЗАПИСЬ</);

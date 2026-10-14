@@ -116,8 +116,9 @@ function descriptorTimestamp(desc, fallbackZone) {
 }
 
 function parseLocalInput(value) {
-  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
   if (!match) throw new Error(`не понимаю дату: ${value}`);
+  if (+match[4] > 23 || +match[5] > 59 || +(match[6] || 0) > 59) throw new Error(`не понимаю время: ${value}`);
   return descriptorFromWall(`${match[1]}-${match[2]}-${match[3]}`, +match[4], +match[5], +(match[6] || 0), null);
 }
 
@@ -443,6 +444,13 @@ export function computeFreeWindows(events = []) {
   return windows;
 }
 
+export function findAvailableSlots(events = [], duration = 30) {
+  if (!Number.isInteger(duration) || duration < 1 || duration > DAY_MINUTES) throw new Error('выберите длительность от 1 до 1440 минут.');
+  return computeFreeWindows(events.filter(event => !event.allDay))
+    .filter(window => window.duration >= duration)
+    .map(window => ({ ...window, slotEndMinute: window.startMinute + duration }));
+}
+
 function displayInterval(instance, dayKey, zone) {
   const startTs = descriptorTimestamp(instance.start, zone); const endTs = descriptorTimestamp(instance.end, zone);
   const startWall = wallKey(startTs, zone); const endWall = wallKey(endTs, zone);
@@ -460,7 +468,8 @@ function serializedTimestamp(desc, zone) {
 
 export function projectDay(events = [], dayKey, timeZone = 'UTC') {
   validDateKey(dayKey); validZone(timeZone);
-  const expanded = events.flatMap(event => expandEventForDay(event, dayKey, timeZone));
+  const expanded = events.flatMap(event => expandEventForDay(event, dayKey, timeZone)
+    .map(instance => ({ ...instance, baseId: event.id })));
   const projectedAllDay = []; const timed = [];
   for (const instance of expanded) {
     const base = { ...instance,
@@ -474,7 +483,7 @@ export function projectDay(events = [], dayKey, timeZone = 'UTC') {
     }
   }
   const timedEvents = assignLanes(timed); const allDayEvents = projectedAllDay; const projected = [...allDayEvents, ...timedEvents];
-  const freeWindows = computeFreeWindows([...timedEvents, ...allDayEvents]); const occupiedMinutes = DAY_MINUTES - freeWindows.reduce((sum, item) => sum + item.duration, 0);
+  const freeWindows = computeFreeWindows(timedEvents); const occupiedMinutes = DAY_MINUTES - freeWindows.reduce((sum, item) => sum + item.duration, 0);
   return { events: projected, timedEvents, allDayEvents, freeWindows, occupiedMinutes, freeMinutes: DAY_MINUTES - occupiedMinutes,
     laneCount: timedEvents.reduce((max, event) => Math.max(max, event.lane + 1), 0), errors: [] };
 }
@@ -484,16 +493,77 @@ export function formatMinutes(minutes) {
   return `${Math.floor(value / 60).toString().padStart(2, '0')}:${(value % 60).toString().padStart(2, '0')}`;
 }
 
+export function getEventFormValues(event, timeZone = 'UTC') {
+  validZone(timeZone);
+  const start = wallKey(descriptorTimestamp(event.start, timeZone), timeZone);
+  const end = wallKey(descriptorTimestamp(event.end, timeZone), timeZone);
+  const time = wall => `${formatMinutes(wall.hour * 60 + wall.minute)}${wall.second ? `:${String(wall.second).padStart(2, '0')}` : ''}`;
+  return { startDate: start.dateKey, start: time(start), endDate: end.dateKey, end: time(end) };
+}
+
+export function createTimedEvent(input, timeZone = 'UTC', previous = null) {
+  validZone(timeZone);
+  const title = String(input.title || '').trim();
+  if (!title) throw new Error('введите название события.');
+  const previousValues = previous ? getEventFormValues(previous, timeZone) : null;
+  const endpoint = (value, name) => {
+    const local = parseLocalInput(value);
+    const normalizedTime = `${formatMinutes(local.hour * 60 + local.minute)}${local.second ? `:${String(local.second).padStart(2, '0')}` : ''}`;
+    if (previousValues && `${local.dateKey}T${normalizedTime}` === `${previousValues[`${name}Date`]}T${previousValues[name]}`) return previous[name];
+    const descriptor = descriptorFromWall(local.dateKey, local.hour, local.minute, local.second, timeZone);
+    const wall = wallKey(descriptor.timestamp, timeZone);
+    if (wall.dateKey !== local.dateKey || wall.hour !== local.hour || wall.minute !== local.minute || wall.second !== local.second) {
+      throw new Error('это время не существует из-за перехода на летнее время. выберите другое.');
+    }
+    return descriptor;
+  };
+  const start = endpoint(input.start, 'start');
+  const end = endpoint(input.end, 'end');
+  if (!(descriptorTimestamp(end, timeZone) > descriptorTimestamp(start, timeZone))) throw new Error('конец события должен быть позже начала. проверьте время и даты.');
+  return { id: input.id, title, description: String(input.description || ''), location: String(input.location || ''),
+    start, end, originalStart: start, originalEnd: end, allDay: false, source: input.source || 'manual' };
+}
+
+function occurrenceSource(events, occurrence) {
+  const source = occurrence && events.find(event => event.id === (occurrence.baseId || occurrence.id));
+  if (!source) throw new Error('событие не найдено. выберите его снова.');
+  return source;
+}
+
+function excludeOccurrence(source, occurrence) {
+  // Exclude the source-zone start, even when its displayed date is different.
+  // New objects keep the undo snapshot and existing EXDATE entries intact.
+  const start = typeof occurrence.start === 'string' ? occurrence.start : { ...occurrence.start };
+  return { ...source, exdates: [...(source.exdates || []), start] };
+}
+
+export function updateOccurrence(events, occurrence, replacement) {
+  const source = occurrenceSource(events, occurrence);
+  const recurring = Boolean(source.recurrence && occurrence.id !== source.id);
+  const updated = { ...source, ...replacement, id: recurring ? occurrence.id : source.id, durationSeconds: null };
+  if (!recurring) return events.map(event => event === source ? updated : event);
+  return [...events.map(event => event === source ? excludeOccurrence(source, occurrence) : event),
+    { ...updated, recurrence: null, exdates: [] }];
+}
+
+export function removeOccurrence(events, occurrence) {
+  const source = occurrenceSource(events, occurrence);
+  if (source.recurrence && occurrence.id !== source.id) {
+    return events.map(event => event === source ? excludeOccurrence(source, occurrence) : event);
+  }
+  return events.filter(event => event !== source);
+}
+
 export function makeDemoEvents(dayKey, timeZone = 'UTC') {
   validDateKey(dayKey); validZone(timeZone);
   const create = (id, title, start, end, extra = {}) => ({ id, title, source: 'demo', completed: false,
     start: descriptorFromWall(dayKey, ...start, timeZone), end: descriptorFromWall(dayKey, ...end, timeZone), ...extra });
   return [
-    create('demo-departure', 'старт дня', [8, 30, 0], [9, 15, 0]),
-    create('demo-focus', 'фокусная платформа', [9, 0, 0], [10, 30, 0]),
-    create('demo-lunch', 'перерыв на станции', [12, 20, 0], [13, 0, 0]),
-    create('demo-review', 'вечерний обзор', [17, 45, 0], [18, 15, 0]),
-    { id: 'demo-all-day', title: 'день без спешки', source: 'demo', completed: false, allDay: true,
+    create('demo-departure', 'план на день', [8, 30, 0], [9, 15, 0]),
+    create('demo-focus', 'работа над проектом', [9, 0, 0], [10, 30, 0]),
+    create('demo-lunch', 'обед', [12, 20, 0], [13, 0, 0]),
+    create('demo-review', 'подвести итоги', [17, 45, 0], [18, 15, 0]),
+    { id: 'demo-all-day', title: 'забрать посылку', source: 'demo', completed: false, allDay: true,
       start: allDayDescriptor(dayKey, timeZone), end: allDayDescriptor(addDays(dayKey, 1), timeZone) }
   ];
 }
