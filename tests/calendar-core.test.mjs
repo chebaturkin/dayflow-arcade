@@ -1,10 +1,12 @@
+import '../i18n.js';
+I18n.setLocale('ru');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 // A data URL keeps these browser modules independent of package.json.
 const source = await readFile(new URL('../js/calendar-core.js', import.meta.url), 'utf8').catch(() => '');
-const core = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+const core = await import(`data:text/javascript;base64,${Buffer.from(source.replace("import '../i18n.js';\n", '')).toString('base64')}`);
 const { unfoldIcs, parseProperty, parseDateValue, parseDuration, parseIcs,
   expandEventForDay, projectDay, assignLanes, computeFreeWindows, formatMinutes, makeDemoEvents } = core;
 const DAY = '2026-10-08';

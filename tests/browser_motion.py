@@ -13,7 +13,7 @@ OUTPUT.mkdir(exist_ok=True)
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
-    context = browser.new_context(viewport={'width': 1440, 'height': 1100}, accept_downloads=True)
+    context = browser.new_context(locale='ru-RU', viewport={'width': 1440, 'height': 1100}, accept_downloads=True)
     page = context.new_page()
     page.set_default_timeout(60000)
     errors = []
@@ -219,7 +219,7 @@ with sync_playwright() as p:
     page.screenshot(path=str(OUTPUT / 'desktop.png'), full_page=True)
 
     # Large data and a touch viewport retain every action without hover.
-    mobile_context = browser.new_context(viewport={'width': 320, 'height': 900}, has_touch=True, is_mobile=True)
+    mobile_context = browser.new_context(locale='ru-RU', viewport={'width': 320, 'height': 900}, has_touch=True, is_mobile=True)
     mobile = mobile_context.new_page()
     mobile.on('pageerror', lambda error: errors.append(str(error)))
     mobile.goto(BASE_URL)

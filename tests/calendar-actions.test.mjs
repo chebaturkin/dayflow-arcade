@@ -1,9 +1,11 @@
+import '../i18n.js';
+I18n.setLocale('ru');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const source = await readFile(new URL('../js/calendar-core.js', import.meta.url), 'utf8');
-const core = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+const core = await import(`data:text/javascript;base64,${Buffer.from(source.replace("import '../i18n.js';\n", '')).toString('base64')}`);
 const { parseIcs, projectDay, findAvailableSlots, getEventFormValues, createTimedEvent, updateOccurrence, removeOccurrence } = core;
 const DAY = '2026-10-14';
 const ZONE = 'Europe/Moscow';

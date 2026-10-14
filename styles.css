@@ -351,3 +351,17 @@ body[data-mode="arcade"] .arcade-dot { box-shadow: 0 0 0 3px #e9684017; }
 @media (max-width: 360px) { .control-group { width: 100%; }.control-group select { max-width: none; width: 100%; }.mode-switch { margin-left: 0; width: 100%; }.mode-button { flex: 1; justify-content: center; }.day-title h2 { font-size: 28px; }.repo-link { font-size: 0; }.repo-link .icon { width: 18px; height: 18px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }.brand-mark, .repo-link .icon, .upload-icon .icon, button .icon, .station-copy, .agenda-copy { transform: none !important; }.motion-flight { display: none; } }
 @media (forced-colors: active) { .button, .mode-button, .drop-zone, .station, .all-day-block, .agenda-select, .agenda-check, .free-window, .availability-slot { border: 1px solid ButtonText; }.route-panel, .route-stage { background: Canvas; color: CanvasText; }.axis-label, .route-legend, .route-actions button { color: CanvasText; }.route-grid-line { background: GrayText; }.now-line { background: Highlight; }.availability-duration { color: ButtonText; } }
+
+/* Language follows the existing header typography. */
+.locale-switch { display: inline-flex; align-items: center; gap: .25rem; color: var(--muted, #777); white-space: nowrap; flex: 0 0 auto; font: inherit; font-size: .75rem; }
+.locale-switch button { appearance: none; min-height: 32px; padding: .25rem .15rem; color: inherit; background: transparent; border: 0; border-radius: 0; box-shadow: none; font: inherit; cursor: pointer; text-underline-offset: .25em; }
+.locale-switch button[aria-pressed="true"] { color: var(--ink, #242725); text-decoration: underline; font-weight: 600; }
+.locale-switch button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+.dialog-head h2 { margin-right: auto; }
+@media (max-width: 390px) { .dialog-head h2 { font-size: 21px; } .dialog-head { gap: 6px; } }
+
+.now-line.is-near-end span { left: auto; right: 5px; white-space: nowrap; }
+
+.now-line.is-near-end { transform: translateX(-1px); }
+.now-line.is-near-end::after { left: auto; right: 0; }

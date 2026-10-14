@@ -1,106 +1,108 @@
-<p>
-  <img src="assets/wordmark.svg" alt="dayflow arcade" width="420">
-</p>
+<p><img src="assets/wordmark.svg" alt="dayflow arcade" width="420"></p>
 
 # dayflow arcade
 
-весь день на одной шкале. загрузите календарь, посмотрите свободные окна и соберите расписание, которое удобно читать.
+english · [русский](README.ru.md)
 
-**[открыть календарь ↗](https://chebaturkin.github.io/dayflow-arcade/)** · [запустить локально](#запустить-локально) · [проверить проект](#проверить-проект)
+your whole day on one timeline. import a calendar, see free slots and put together a schedule you can read at a glance.
 
-![dayflow arcade: расписание, свободное время и список событий](docs/screenshots/desktop.png)
+**[open the calendar ↗](https://chebaturkin.github.io/dayflow-arcade/?lang=en)** · [run locally](#run-locally) · [checks](#checks) · [русская версия](https://chebaturkin.github.io/dayflow-arcade/?lang=ru)
 
-## как это работает
+![dayflow arcade with a timeline, free slots and event list](docs/screenshots/en/desktop.png)
 
-выберите день и загрузите файл `.ics` из своего календаря. события появятся на временной шкале и в списке под ней. нажмите на запись, чтобы посмотреть детали, изменить время или отметить её выполненной. для знакомства есть кнопка «загрузить пример».
+## using the calendar
 
-- переходите между днями стрелками, выбирайте дату или возвращайтесь к сегодняшнему дню;
-- смотрите весь день, приближайте события и переходите к текущему моменту;
-- создавайте запись из свободного окна, выбрав длительность 30, 60 или 90 минут;
-- добавляйте события вручную, редактируйте, удаляйте и отменяйте последнее действие;
-- выбирайте часовой пояс, спокойный или аркадный режим;
-- скачивайте расписание и список событий в svg или png.
+choose a day and import an `.ics` file from your calendar. events appear on the timeline and in the list below. select one to see its details, edit its time or mark it as done. “load example” gives you a sample day.
 
-изменение или удаление повторяющегося события касается выбранного экземпляра, соседние повторения остаются в календаре. форма показывает время в выбранном часовом поясе и позволяет задать конец на следующую дату.
+- move between days with arrows, choose a date or return to today.
+- fit the whole day or its events into view, or jump to the current time.
+- create an event from a free slot with a 30, 60 or 90 minute duration.
+- add, edit and delete events, and undo the last action.
+- choose a time zone and calm or arcade mode.
+- download the schedule and event list as svg or png.
 
-чтобы добавить запись в свободное время, выберите длительность в блоке «свободные окна» и нажмите на подходящий промежуток. начало и конец появятся в форме; останется указать название и сохранить. окно можно выбрать и на шкале. если конец приходится на 24:00, форма покажет 00:00 следующего дня.
+editing or deleting a recurring event affects only the selected occurrence. its neighbors stay in the calendar. the form uses the selected time zone and supports ending on the next date.
 
-заметки на весь день идут отдельной строкой и не занимают часы в статистике. пересекающиеся события занимают разные ряды; занятое время считается по объединённым интервалам, поэтому пересечения не удваивают часы.
+choose a duration under “free slots” and select a suitable interval. its start and end appear in the form; add a title and save. you can also select a slot on the timeline. an end at 24:00 becomes 00:00 on the next date.
 
-## два режима
+all day notes have their own row and do not occupy hours in the metrics. overlapping events have separate lanes. busy time uses merged intervals, so overlaps do not count the same hours twice.
 
-спокойный режим оставляет акцент на расписании. аркадный добавляет точечную фактуру, чёткие карточки и отметку выполнения, которая летит к счётчику «готово», когда оба элемента видны на экране. короткие переходы и отклик кнопок есть в обоих режимах; системная настройка уменьшения движения отключает анимации.
+the **ru / en** control changes the interface, demo labels, dates and export captions without reloading. direct `?lang=ru` and `?lang=en` links take priority over the saved choice, the first supported browser preference and english. your calendar text and unfinished form remain yours.
+
+## two modes
+
+calm mode keeps the emphasis on the schedule. arcade adds a dotted texture, crisp cards and a completion mark that flies toward the done counter when both are visible. both modes have short transitions and button feedback. your system's reduced motion preference disables animations.
 
 <details>
-<summary>аркадный режим, мобильный экран и добавление события</summary>
+<summary>arcade mode, mobile screen and event form</summary>
 
-![аркадный режим временной шкалы](docs/screenshots/arcade.png)
-
-<p><img src="docs/screenshots/mobile.png" alt="календарь на экране телефона" width="300"></p>
-
-![форма добавления события](docs/screenshots/event-dialog.png)
+![the timeline in arcade mode](docs/screenshots/en/arcade.png)
+<p><img src="docs/screenshots/en/mobile.png" alt="calendar on a phone" width="300"></p>
+![the add event form](docs/screenshots/en/event-dialog.png)
 
 </details>
 
-## данные остаются у вас
+## data stays with you
 
-календарь разбирается в браузере. события, отметки, режим и часовой пояс сохраняются в `localStorage`. файлы и данные календаря никуда не отправляются. регистрации, внешнего api и серверной базы данных нет.
+the calendar is parsed in your browser. events, completion marks, mode and time zone are saved in `localStorage`; the language choice has a separate key. calendar files and data are never uploaded. there are no accounts, external api calls or server database.
 
-импорт заменяет источник событий; последнее действие можно отменить. данные доступны в текущем браузере: очистка данных сайта удалит сохранённый календарь. синхронизации с исходным календарём нет. после загрузки приложение работает без сетевых запросов, но для первого открытия и перезагрузки опубликованной страницы нужна сеть: service worker пока нет.
+an import replaces the event source; you can undo the last action. data belongs to this browser: clearing site data removes the saved calendar. there is no sync with the original calendar. after loading, the app makes no network requests, but opening or reloading the published page needs a connection: there is no service worker yet.
 
-## запустить локально
+## run locally
 
-сборка и установка зависимостей для приложения не нужны:
+no build or dependency installation is needed for the app:
 
 ```bash
 python3 -m http.server 4173
 ```
 
-откройте [localhost:4173](http://localhost:4173). запуск через `file://` не подходит: браузер блокирует es-модули из локального файла.
+open [localhost:4173](http://localhost:4173). `file://` cannot run the app because browsers block modules loaded directly from a local file.
 
-## поддержка календарей
+## calendar support
 
-импорт понимает utc, `TZID`, время без часового пояса, записи на весь день, `DURATION`, `EXDATE` и повторения `DAILY` / `WEEKLY`. неподдерживаемые правила показываются в сообщении; ошибочный файл не стирает сохранённые события. предел размера файла: 2 мб.
+imports support utc, `TZID`, floating times, all day events, `DURATION`, `EXDATE` and `DAILY` / `WEEKLY` recurrence. unsupported rules appear in a message. an invalid file does not erase saved events. file size limit: 2 mb.
 
-правки отдельных повторений сохраняются локально; повторный импорт заменяет их данными файла. изменение всей серии и импорт исключений `RECURRENCE-ID` пока не поддерживаются. заметки на весь день можно отметить или удалить, редактор их дат не добавлен.
+changes to individual occurrences are stored locally; reimporting replaces them with file data. editing an entire series and importing `RECURRENCE-ID` exceptions are not supported yet. all day notes can be completed or deleted, but their date editor is not implemented.
 
-## проверить проект
+## checks
 
-для тестов ядра нужен node.js:
+core tests need node.js:
 
 ```bash
-node --test tests/*.test.mjs
+node --test tests/*.test.*
 node --check js/app.js
 node --check js/calendar-core.js
 node --check js/motion.js
 ```
 
-для браузерной проверки нужен python с playwright и chromium. оставьте локальный сервер на порту `4173`, затем выполните:
+browser tests need python with playwright and chromium. keep the local server running, then run:
 
 ```bash
-python3 tests/browser_smoke.py
-python3 tests/calendar_usability.py
-python3 tests/browser_motion.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/browser_smoke.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/calendar_usability.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/browser_motion.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 node tests/i18n-browser.cjs
 ```
 
-проверка проходит импорт, создание и редактирование, отметки выполнения, отмену, переходы между днями, сохранение старых данных, две вкладки, экспорт и мобильную ширину. отдельные проверки проходят свободные окна, повторения, часовые пояса и анимации. скриншоты readme сняты с работающего приложения на демонстрационных данных; их можно обновить командой:
+checks cover imports, creation and editing, completion, undo, day navigation, legacy data, two tabs, exports, free slots, recurrence, time zones, motion and both languages. readme screenshots come from the running application with demo data. update both language sets with:
 
 ```bash
-python3 tests/capture_screenshots.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/capture_screenshots.py
 ```
 
-## публикация
+## publication
 
-[github pages](https://chebaturkin.github.io/dayflow-arcade/) обновляется после отправки изменений в `main`. workflow находится в [`.github/workflows/pages.yml`](.github/workflows/pages.yml). для своего репозитория выберите **github actions** в **settings → pages**.
+[github pages](https://chebaturkin.github.io/dayflow-arcade/) updates after changes reach `main`. the workflow is [`.github/workflows/pages.yml`](.github/workflows/pages.yml). for your own repository, select **github actions** in **settings → pages**.
 
-## устройство проекта
+## project structure
 
-- `index.html`: интерфейс и доступные элементы управления;
-- `styles.css`: оформление, адаптивная сетка и анимации;
-- `js/app.js`: состояние, список событий, импорт и экспорт;
-- `js/motion.js`: анимации выбора, выполнения и перемещения записей;
-- `js/calendar-core.js`: разбор календаря, повторения, пересечения и свободные окна;
-- `assets/logo.svg`: авторский знак: петля дня и точка текущего момента;
-- `assets/fonts/`: локальные шрифты и сведения об их лицензиях.
+- `index.html`: interface and accessible controls.
+- `styles.css`: styling, responsive layout and motion.
+- `i18n.js`: local interface messages and language selection.
+- `js/app.js`: state, event list, imports and exports.
+- `js/motion.js`: selection, completion and event movement animations.
+- `js/calendar-core.js`: calendar parsing, recurrence, overlaps and free slots.
+- `assets/logo.svg`: the day loop and current time mark.
+- `assets/fonts/`: local fonts and licenses.
 
-источники идей, изученные реализации, лицензии и выбор улучшений собраны в [исследовании аналогов](docs/research/2026-10-14-calendar-improvements.md).
+inspirations, reviewed implementations, licenses and design decisions are in the [research notes](docs/research/2026-10-14-calendar-improvements.md).

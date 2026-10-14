@@ -1,3 +1,4 @@
+import '../i18n.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -11,8 +12,8 @@ test('published interface uses lowercase copy and keeps technical names intact',
   assert.match(html, /<h1>dayflow arcade<\/h1>/);
   assert.match(html, /<h2 id="controls-title"[^>]*>настройки дня<\/h2>/);
   assert.match(html, /<h2 id="import-title"[^>]*>добавить календарь<\/h2>/);
-  assert.match(html, /<button[^>]+id="load-demo"[^>]*>загрузить пример/);
-  assert.match(html, /id="open-manual"[\s\S]*?добавить событие<\/button>/);
+  assert.match(html, /<button[^>]+id="load-demo"[^>]*><span[^>]*>загрузить пример<\/span>/);
+  assert.match(html, /id="open-manual"[\s\S]*?добавить событие<\/span><\/button>/);
   assert.doesNotMatch(html, /линия дня/);
   assert.match(html, /\.ics/);
   assert.doesNotMatch(html, />СЕГОДНЯ</);
@@ -30,7 +31,8 @@ test('ICS dropzone is keyboard reachable', async () => {
 test('README stays portable and describes local-only data handling', async () => {
   const readme = await read('README.md');
   assert.doesNotMatch(readme, /\/Users\/timofeychebaturkin/);
-  assert.match(readme, /данные.*браузер/i);
+  assert.match(readme, /calendar.*browser/i);
+  assert.match(await read('README.ru.md'), /данные.*браузер/i);
   assert.match(readme, /github pages/i);
   assert.match(readme, /https:\/\/chebaturkin\.github\.io\/dayflow-arcade\//);
 });
@@ -44,5 +46,6 @@ test('GitHub Pages publication is wired for the static site', async () => {
   assert.match(workflow, /pages:\s*write/);
   assert.match(workflow, /id-token:\s*write/);
   assert.match(notFound, /href="index\.html"/);
-  assert.match(notFound, /страница не найдена/);
+  assert.match(notFound, /data-i18n="notFound.heading">page not found<\/h1>/);
+  assert.equal(I18n.messages.ru['notFound.heading'], 'страница не найдена');
 });

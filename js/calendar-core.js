@@ -1,3 +1,5 @@
+import '../i18n.js';
+const t = (...args) => globalThis.I18n.t(...args);
 /* Pure, dependency-free calendar model used by the browser UI and Node tests. */
 
 const DAY_MS = 86400000;
@@ -7,28 +9,28 @@ const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 function validZone(zone) {
   const value = zone || 'UTC';
   try { new Intl.DateTimeFormat('en-US', { timeZone: value }).format(); }
-  catch { throw new Error(`неизвестный часовой пояс: ${value}`); }
+  catch { throw new Error(t("s185", value)); }
   return value;
 }
 
 function validDateKey(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) throw new Error(`не понимаю дату: ${value}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) throw new Error(t("s186", value));
   const [y, m, d] = String(value).split('-').map(Number);
   const date = new Date(Date.UTC(y, m - 1, d));
   if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) {
-    throw new Error(`не понимаю дату: ${value}`);
+    throw new Error(t("s186", value));
   }
   return String(value);
 }
 
 function dateParts(value) {
-  if (typeof value !== 'string') throw new Error(`не понимаю дату: ${value}`);
+  if (typeof value !== 'string') throw new Error(t("s186", value));
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) throw new Error(`не понимаю дату: ${value}`);
+  if (!match) throw new Error(t("s186", value));
   const [year, month, day] = match.slice(1).map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
-    throw new Error(`не понимаю дату: ${value}`);
+    throw new Error(t("s186", value));
   }
   return { year, month, day };
 }
@@ -117,8 +119,8 @@ function descriptorTimestamp(desc, fallbackZone) {
 
 function parseLocalInput(value) {
   const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
-  if (!match) throw new Error(`не понимаю дату: ${value}`);
-  if (+match[4] > 23 || +match[5] > 59 || +(match[6] || 0) > 59) throw new Error(`не понимаю время: ${value}`);
+  if (!match) throw new Error(t("s186", value));
+  if (+match[4] > 23 || +match[5] > 59 || +(match[6] || 0) > 59) throw new Error(t("s187", value));
   return descriptorFromWall(`${match[1]}-${match[2]}-${match[3]}`, +match[4], +match[5], +(match[6] || 0), null);
 }
 
@@ -151,7 +153,7 @@ export function parseProperty(line) {
     if (ch === '"') quoted = !quoted;
     if (ch === ':' && !quoted) { index = i; break; }
   }
-  if (index < 1) throw new Error(`не удалось прочитать строку ics: ${line}`);
+  if (index < 1) throw new Error(t("s188", line));
   const header = String(line).slice(0, index);
   const [namePart, ...paramParts] = splitHeader(header);
   const params = {};
@@ -169,10 +171,10 @@ export function parseProperty(line) {
 export function parseDuration(value) {
   const text = String(value).trim();
   const match = text.match(/^P(?:(\d+)W|(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?)$/i);
-  if (!match || text === 'P' || /^P(?:T)?$/i.test(text)) throw new Error(`не понимаю длительность: ${value}`);
+  if (!match || text === 'P' || /^P(?:T)?$/i.test(text)) throw new Error(t("s189", value));
   const seconds = (Number(match[1] || 0) * 7 + Number(match[2] || 0)) * 86400 +
     Number(match[3] || 0) * 3600 + Number(match[4] || 0) * 60 + Number(match[5] || 0);
-  if (!Number.isFinite(seconds) || seconds <= 0) throw new Error(`не понимаю длительность: ${value}`);
+  if (!Number.isFinite(seconds) || seconds <= 0) throw new Error(t("s189", value));
   return seconds;
 }
 
@@ -180,17 +182,17 @@ export function parseDateValue(value, params = {}, fallbackZone = 'UTC') {
   const source = String(value).trim();
   const opts = Object.fromEntries(Object.entries(params || {}).map(([k, v]) => [String(k).toUpperCase(), v]));
   if (opts.VALUE === 'DATE' || /^\d{8}$/.test(source)) {
-    if (!/^\d{8}$/.test(source)) throw new Error(`не понимаю дату: ${value}`);
+    if (!/^\d{8}$/.test(source)) throw new Error(t("s186", value));
     const key = `${source.slice(0, 4)}-${source.slice(4, 6)}-${source.slice(6, 8)}`;
     dateParts(key);
     return allDayDescriptor(key, opts.TZID || null);
   }
   const match = source.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/i);
-  if (!match) throw new Error(`не понимаю дату: ${value}`);
+  if (!match) throw new Error(t("s186", value));
   const [, y, mo, d, h, mi, s, z] = match;
   const key = `${y}-${mo}-${d}`;
   dateParts(key);
-  if (+h > 23 || +mi > 59 || +s > 59) throw new Error(`не понимаю время: ${value}`);
+  if (+h > 23 || +mi > 59 || +s > 59) throw new Error(t("s187", value));
   const zone = z ? 'UTC' : (opts.TZID || null);
   if (zone) validZone(zone);
   const descriptor = descriptorFromWall(key, +h, +mi, +s, zone);
@@ -215,15 +217,15 @@ function parseRRule(value, errors) {
     else if (key === 'UNTIL') {
       rule.untilRaw = val;
       try { parseDateValue(val); }
-      catch { errors.push('UNTIL повторения имеет неверный формат'); rule.invalid = true; }
+      catch { errors.push(t("s190")); rule.invalid = true; }
     }
     else if (key === 'BYDAY') rule.byday = val.split(',').map(v => v.toUpperCase());
-    else { errors.push(`параметр RRULE ${key} не поддерживается`); rule.invalid = true; }
+    else { errors.push(t("s191", key)); rule.invalid = true; }
   }
-  if (!['DAILY', 'WEEKLY'].includes(rule.freq)) { errors.push(`повторение ${rule.freq || 'без частоты'} не поддерживается`); rule.invalid = true; }
-  if (rule.interval !== undefined && (!Number.isInteger(rule.interval) || rule.interval < 1)) { errors.push('интервал повторения должен быть положительным'); rule.invalid = true; }
-  if (rule.count !== undefined && (!Number.isInteger(rule.count) || rule.count < 1)) { errors.push('COUNT повторения должен быть положительным'); rule.invalid = true; }
-  if (rule.byday && rule.byday.some(day => !WEEKDAYS.includes(day))) { errors.push('BYDAY содержит неизвестный день'); rule.invalid = true; }
+  if (!['DAILY', 'WEEKLY'].includes(rule.freq)) { errors.push(t("s193", rule.freq || t("s192"))); rule.invalid = true; }
+  if (rule.interval !== undefined && (!Number.isInteger(rule.interval) || rule.interval < 1)) { errors.push(t("s194")); rule.invalid = true; }
+  if (rule.count !== undefined && (!Number.isInteger(rule.count) || rule.count < 1)) { errors.push(t("s195")); rule.invalid = true; }
+  if (rule.byday && rule.byday.some(day => !WEEKDAYS.includes(day))) { errors.push(t("s196")); rule.invalid = true; }
   return rule;
 }
 
@@ -233,12 +235,12 @@ export function parseIcs(input) {
   const errors = []; const text = unfoldIcs(input); const lines = text.split('\n'); const blocks = [];
   let active = null;
   for (const line of lines) {
-    if (line.toUpperCase() === 'BEGIN:VEVENT') { if (active) errors.push('вложенный блок события'); active = []; continue; }
-    if (line.toUpperCase() === 'END:VEVENT') { if (!active) errors.push('закрыт незакрытый блок события'); else blocks.push(active); active = null; continue; }
+    if (line.toUpperCase() === 'BEGIN:VEVENT') { if (active) errors.push(t("s197")); active = []; continue; }
+    if (line.toUpperCase() === 'END:VEVENT') { if (!active) errors.push(t("s198")); else blocks.push(active); active = null; continue; }
     if (active) active.push(line);
   }
-  if (active) errors.push('событие не завершено');
-  if (!blocks.length) { if (!/BEGIN:VCALENDAR/i.test(text)) errors.push('это не календарный ics-файл'); else errors.push('в ics нет событий'); }
+  if (active) errors.push(t("s199"));
+  if (!blocks.length) { if (!/BEGIN:VCALENDAR/i.test(text)) errors.push(t("s200")); else errors.push(t("s201")); }
   const events = [];
   const usedIds = new Map();
   for (let blockIndex = 0; blockIndex < blocks.length; blockIndex += 1) {
@@ -247,16 +249,16 @@ export function parseIcs(input) {
       const properties = [];
       for (const line of block.filter(Boolean)) {
         try { properties.push(parseProperty(line)); }
-        catch (error) { errors.push(`строка события пропущена: ${error.message}`); }
+        catch (error) { errors.push(t("s202", error.message)); }
       }
       const startProp = valueAt(properties, 'DTSTART');
-      if (!startProp) throw new Error('у события нет DTSTART');
+      if (!startProp) throw new Error(t("s203"));
       const start = parseDateValue(startProp.rawValue, startProp.params);
       const endProp = valueAt(properties, 'DTEND'); const durationProp = valueAt(properties, 'DURATION');
       let end; let durationSeconds = null;
       if (endProp) {
         end = parseDateValue(endProp.rawValue, endProp.params);
-        if (end.allDay !== start.allDay) throw new Error('начало и конец события должны быть одного типа: со временем или на весь день');
+        if (end.allDay !== start.allDay) throw new Error(t("s204"));
       } else if (durationProp) {
         durationSeconds = parseDuration(durationProp.value);
         if (start.allDay) end = allDayDescriptor(addDays(start.dateKey, Math.ceil(durationSeconds / 86400)), start.zone);
@@ -266,15 +268,15 @@ export function parseIcs(input) {
           end = descriptorFromWall(date, Math.floor(rem / 3600), Math.floor((rem % 3600) / 60), rem % 60, start.zone);
         }
       } else if (start.allDay) end = allDayDescriptor(addDays(start.dateKey, 1), start.zone);
-      else throw new Error('у события нет DTEND или DURATION');
+      else throw new Error(t("s205"));
       const sTs = descriptorTimestamp(start, start.zone || 'UTC'); const eTs = descriptorTimestamp(end, end.zone || start.zone || 'UTC');
-      if (start.allDay ? dayDistance(start.dateKey, end.dateKey) <= 0 : !(eTs > sTs)) throw new Error('конец события должен быть позже начала');
+      if (start.allDay ? dayDistance(start.dateKey, end.dateKey) <= 0 : !(eTs > sTs)) throw new Error(t("s206"));
       const uid = valueAt(properties, 'UID')?.value?.trim();
-      const title = valueAt(properties, 'SUMMARY')?.value || 'без названия';
+      const title = valueAt(properties, 'SUMMARY')?.value || t("s64");
       const recurrenceProp = valueAt(properties, 'RRULE');
       const recurrence = recurrenceProp ? parseRRule(recurrenceProp.value, errors) : null;
       const exdates = properties.filter(p => p.name === 'EXDATE').map(p => {
-        try { return p.value.split(',').map(v => parseDateValue(v, p.params)); } catch { errors.push('не понимаю EXDATE'); return []; }
+        try { return p.value.split(',').map(v => parseDateValue(v, p.params)); } catch { errors.push(t("s207")); return []; }
       }).flat();
       const stable = uid || `${start.dateKey || ''}/${start.time || ''}/${end.dateKey || ''}/${end.time || ''}`;
       const baseId = uid ? hashId(`uid:${uid}`) : hashId(`nouid:${blockIndex}:${stable}`);
@@ -286,7 +288,7 @@ export function parseIcs(input) {
         source: 'ics', completed: false, allDay: start.allDay, start, end, durationSeconds,
         recurrence: recurrence ? { ...recurrence, raw: recurrenceProp.value } : null, exdates,
         originalStart: start, originalEnd: end });
-    } catch (error) { errors.push(`событие пропущено: ${error.message}`); }
+    } catch (error) { errors.push(t("s208", error.message)); }
   }
   return { events, errors };
 }
@@ -445,7 +447,7 @@ export function computeFreeWindows(events = []) {
 }
 
 export function findAvailableSlots(events = [], duration = 30) {
-  if (!Number.isInteger(duration) || duration < 1 || duration > DAY_MINUTES) throw new Error('выберите длительность от 1 до 1440 минут.');
+  if (!Number.isInteger(duration) || duration < 1 || duration > DAY_MINUTES) throw new Error(t("s209"));
   return computeFreeWindows(events.filter(event => !event.allDay))
     .filter(window => window.duration >= duration)
     .map(window => ({ ...window, slotEndMinute: window.startMinute + duration }));
@@ -504,7 +506,7 @@ export function getEventFormValues(event, timeZone = 'UTC') {
 export function createTimedEvent(input, timeZone = 'UTC', previous = null) {
   validZone(timeZone);
   const title = String(input.title || '').trim();
-  if (!title) throw new Error('введите название события.');
+  if (!title) throw new Error(t("s155"));
   const previousValues = previous ? getEventFormValues(previous, timeZone) : null;
   const endpoint = (value, name) => {
     const local = parseLocalInput(value);
@@ -513,20 +515,20 @@ export function createTimedEvent(input, timeZone = 'UTC', previous = null) {
     const descriptor = descriptorFromWall(local.dateKey, local.hour, local.minute, local.second, timeZone);
     const wall = wallKey(descriptor.timestamp, timeZone);
     if (wall.dateKey !== local.dateKey || wall.hour !== local.hour || wall.minute !== local.minute || wall.second !== local.second) {
-      throw new Error('это время не существует из-за перехода на летнее время. выберите другое.');
+      throw new Error(t("s210"));
     }
     return descriptor;
   };
   const start = endpoint(input.start, 'start');
   const end = endpoint(input.end, 'end');
-  if (!(descriptorTimestamp(end, timeZone) > descriptorTimestamp(start, timeZone))) throw new Error('конец события должен быть позже начала. проверьте время и даты.');
+  if (!(descriptorTimestamp(end, timeZone) > descriptorTimestamp(start, timeZone))) throw new Error(t("s211"));
   return { id: input.id, title, description: String(input.description || ''), location: String(input.location || ''),
     start, end, originalStart: start, originalEnd: end, allDay: false, source: input.source || 'manual' };
 }
 
 function occurrenceSource(events, occurrence) {
   const source = occurrence && events.find(event => event.id === (occurrence.baseId || occurrence.id));
-  if (!source) throw new Error('событие не найдено. выберите его снова.');
+  if (!source) throw new Error(t("s212"));
   return source;
 }
 
@@ -559,11 +561,11 @@ export function makeDemoEvents(dayKey, timeZone = 'UTC') {
   const create = (id, title, start, end, extra = {}) => ({ id, title, source: 'demo', completed: false,
     start: descriptorFromWall(dayKey, ...start, timeZone), end: descriptorFromWall(dayKey, ...end, timeZone), ...extra });
   return [
-    create('demo-departure', 'план на день', [8, 30, 0], [9, 15, 0]),
-    create('demo-focus', 'работа над проектом', [9, 0, 0], [10, 30, 0]),
-    create('demo-lunch', 'обед', [12, 20, 0], [13, 0, 0]),
-    create('demo-review', 'подвести итоги', [17, 45, 0], [18, 15, 0]),
-    { id: 'demo-all-day', title: 'забрать посылку', source: 'demo', completed: false, allDay: true,
+    create('demo-departure', t("s213"), [8, 30, 0], [9, 15, 0]),
+    create('demo-focus', t("s214"), [9, 0, 0], [10, 30, 0]),
+    create('demo-lunch', t("s215"), [12, 20, 0], [13, 0, 0]),
+    create('demo-review', t("s216"), [17, 45, 0], [18, 15, 0]),
+    { id: 'demo-all-day', title: t("s217"), source: 'demo', completed: false, allDay: true,
       start: allDayDescriptor(dayKey, timeZone), end: allDayDescriptor(addDays(dayKey, 1), timeZone) }
   ];
 }

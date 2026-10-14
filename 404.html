@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
+  <base href="/dayflow-arcade/">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#F8F6F0">
-  <title>страница не найдена: dayflow arcade</title>
+  <title data-i18n="notFound.title">page not found: dayflow arcade</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <style>
@@ -14,13 +15,15 @@
     .not-found p { margin: 0 0 26px; color: var(--muted); }
     .not-found a { text-decoration: none; }
   </style>
+  <script src="i18n.js"></script>
 </head>
 <body>
   <div class="not-found">
     <img src="assets/logo.svg" width="56" height="56" alt="dayflow arcade">
-    <h1>страница не найдена</h1>
-    <p>ссылка ведёт не туда. откройте календарь и продолжите с нужного дня.</p>
-    <a class="button button-primary" href="index.html">открыть dayflow arcade ↗</a>
+    <h1 data-i18n="notFound.heading">page not found</h1>
+    <p data-i18n="notFound.body">this link leads to a missing page. open the calendar and continue with your day.</p>
+    <a class="button button-primary" href="index.html" data-i18n="notFound.link">open dayflow arcade ↗</a>
   </div>
+  <script src="not-found.js"></script>
 </body>
 </html>

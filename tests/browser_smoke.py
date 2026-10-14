@@ -10,7 +10,7 @@ BASE_URL = os.environ.get('DAYFLOW_BASE_URL', 'http://127.0.0.1:4173')
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
-    context = browser.new_context(viewport={"width": 1440, "height": 1000}, accept_downloads=True)
+    context = browser.new_context(locale='ru-RU', viewport={"width": 1440, "height": 1000}, accept_downloads=True)
     page = context.new_page()
     page.set_default_timeout(60000)
     console_errors = []
@@ -145,12 +145,12 @@ with sync_playwright() as p:
     huge_ics = Path(tempfile.gettempdir()) / "dayflow-huge.ics"
     huge_ics.write_bytes(b"BEGIN:VCALENDAR\n" + b"X" * (2 * 1024 * 1024) + b"\nEND:VCALENDAR\n")
     page.locator("#ics-file").set_input_files(str(huge_ics))
-    expect(page.locator("#message-stack")).to_contain_text("2 МБ")
+    expect(page.locator("#message-stack")).to_contain_text("2 мб")
 
     # Keyboard and mobile timeline affordance.
     page.locator("#route-viewport").focus()
     assert page.locator("#route-viewport").get_attribute("role") == "region"
-    mobile_context = browser.new_context(viewport={"width": 320, "height": 900})
+    mobile_context = browser.new_context(locale='ru-RU', viewport={"width": 320, "height": 900})
     mobile = mobile_context.new_page()
     mobile.goto(f"{BASE_URL}/index.html")
     mobile.wait_for_load_state("networkidle")
@@ -166,7 +166,7 @@ with sync_playwright() as p:
     mobile_context.close()
 
     # Upgrade calendars saved before there was a shared editable source.
-    migration_context = browser.new_context()
+    migration_context = browser.new_context(locale='ru-RU')
     migration = migration_context.new_page()
     migration.goto(BASE_URL)
     migration.wait_for_load_state('networkidle')
@@ -189,7 +189,7 @@ with sync_playwright() as p:
     migration_context.close()
 
     # Adding and deleting on different dates must not restore old snapshots.
-    nav_context = browser.new_context(viewport={"width": 1440, "height": 1000})
+    nav_context = browser.new_context(locale='ru-RU', viewport={"width": 1440, "height": 1000})
     nav = nav_context.new_page()
     nav.goto(BASE_URL)
     nav.wait_for_load_state('networkidle')
@@ -224,7 +224,7 @@ with sync_playwright() as p:
     nav_context.close()
 
     # A display setting in another tab must not overwrite new events.
-    tabs_context = browser.new_context(viewport={"width": 1440, "height": 1000})
+    tabs_context = browser.new_context(locale='ru-RU', viewport={"width": 1440, "height": 1000})
     tabs_context.set_default_timeout(60000)
     first = tabs_context.new_page()
     first.goto(BASE_URL)

@@ -1,3 +1,6 @@
+import '../i18n.js';
+const t = (...args) => globalThis.I18n.t(...args);
+I18n.apply();
 import {
   parseIcs,
   projectDay,
@@ -23,7 +26,7 @@ const todayKey = () => {
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const pct = (minute) => `${clamp((minute / 1440) * 100, 0, 100)}%`;
 const escXml = (value = '') => String(value).replace(/[<>&'\"]/g, (char) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[char]));
-const sourceLabel = (source = 'ics') => ({ demo: 'пример', manual: 'вручную', ics: 'ics' }[source] || 'событие');
+const sourceLabel = (source = 'ics') => ({ demo: t("s90"), manual: t("s91"), ics: 'ics' }[source] || t("s48"));
 
 const state = {
   dayKey: todayKey(),
@@ -81,29 +84,29 @@ function pushStateError(text, isError = true) {
 function readJson(key, fallback, label = key) {
   let stored;
   try { stored = localStorage.getItem(key); }
-  catch { pushStateError(`не удалось прочитать ${label}: хранилище браузера недоступно.`, true); return fallback; }
+  catch { pushStateError(t("s92", label), true); return fallback; }
   if (stored === null) return fallback;
   try { return JSON.parse(stored); }
-  catch { pushStateError(`не удалось прочитать ${label}: запись повреждена.`, true); return fallback; }
+  catch { pushStateError(t("s93", label), true); return fallback; }
 }
 function validCompletionMap(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   return Object.fromEntries(Object.entries(value).filter(([key, completed]) => key.length <= 512 && typeof completed === 'boolean'));
 }
-function restoreEvents(raw, source = 'хранилища') {
+function restoreEvents(raw, source = t("s94")) {
   if (!Array.isArray(raw)) return [];
   return raw.filter((event) => {
     if (validRawEvent(event)) return true;
-    pushStateError(`событие из ${source} пропущено: повреждённая запись.`, true);
+    pushStateError(t("s95", source), true);
     return false;
   });
 }
 function readStore(dayKey = state.dayKey) {
-  const saved = readJson(storageKey(dayKey), null, 'сохранённый день');
-  const source = readJson(sourceStorageKey, null, 'источник событий');
-  const settings = readJson(settingsStorageKey, null, 'настройки');
+  const saved = readJson(storageKey(dayKey), null, t("s96"));
+  const source = readJson(sourceStorageKey, null, t("s97"));
+  const settings = readJson(settingsStorageKey, null, t("s98"));
   const candidate = settings?.eventStoreVersion === 2 && Array.isArray(source) ? source : (Array.isArray(saved?.rawEvents) ? saved.rawEvents : source);
-  state.rawEvents = restoreEvents(candidate, saved ? 'хранилища' : 'источника');
+  state.rawEvents = restoreEvents(candidate, saved ? t("s94") : t("s99"));
   state.completed = validCompletionMap(saved?.completed);
   const zone = settings?.timeZone || saved?.timeZone;
   if (validTimeZone(zone)) state.timeZone = zone;
@@ -148,12 +151,12 @@ function mergeLegacyEvents() {
 }
 function saveStore(sourceChanged = false) {
   try {
-    const settings = readJson(settingsStorageKey, null, 'настройки');
+    const settings = readJson(settingsStorageKey, null, t("s98"));
     if (sourceChanged || settings?.eventStoreVersion !== 2) localStorage.setItem(sourceStorageKey, JSON.stringify(state.rawEvents));
     localStorage.setItem(storageKey(), JSON.stringify({ rawEvents: state.rawEvents, completed: state.completed, mode: state.mode, timeZone: state.timeZone }));
     localStorage.setItem(settingsStorageKey, JSON.stringify({ mode: state.mode, timeZone: state.timeZone, eventStoreVersion: 2 }));
   } catch {
-    showMessage('состояние не сохранилось: хранилище браузера недоступно.', true);
+    showMessage(t("s100"), true);
   }
 }
 function dayDate() {
@@ -161,10 +164,10 @@ function dayDate() {
   return new Date(year, month - 1, day, 12);
 }
 function formatDay() {
-  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(dayDate());
+  return new Intl.DateTimeFormat(I18n.intlLocale, { day: 'numeric', month: 'long' }).format(dayDate()).toLocaleLowerCase(I18n.intlLocale);
 }
 function formatWeekday() {
-  return new Intl.DateTimeFormat('ru-RU', { weekday: 'long' }).format(dayDate());
+  return new Intl.DateTimeFormat(I18n.intlLocale, { weekday: 'long' }).format(dayDate()).toLocaleLowerCase(I18n.intlLocale);
 }
 function minuteNow() {
   const now = state.now;
@@ -184,21 +187,21 @@ function minuteNow() {
 function timeNow() {
   const options = { hour: '2-digit', minute: '2-digit', hour12: false };
   if (state.timeZone !== 'local') options.timeZone = resolvedZone();
-  return new Intl.DateTimeFormat('ru-RU', options).format(state.now);
+  return new Intl.DateTimeFormat(I18n.intlLocale, options).format(state.now);
 }
 function durationText(minutes = 0) {
   if (minutes >= 60) {
     const hours = Math.floor(minutes / 60);
     const rest = minutes % 60;
-    return rest ? `${hours} ч ${rest} мин` : `${hours} ч`;
+    return rest ? t("s101", hours, rest) : t("s102", hours);
   }
-  return `${minutes} мин`;
+  return t("s103", minutes);
 }
 function metricDuration(minutes = 0) {
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  const hourPart = `${hours}<span class=\"metric-unit\">ч</span>`;
-  return rest ? `${hourPart} ${rest}<span class=\"metric-unit\">м</span>` : hourPart;
+  const hourPart = t("s104", hours);
+  return rest ? t("s105", hourPart, rest) : hourPart;
 }
 function showToast(text, isError = false) {
   const toast = $('toast');
@@ -239,7 +242,7 @@ function announceAction(text, isError = false, undo = false) {
     toastTimer = setTimeout(hideToast, 8000);
     const toast = $('toast');
     const button = document.createElement('button');
-    button.type = 'button'; button.id = 'undo-action'; button.className = 'button button-quiet'; button.textContent = 'отменить';
+    button.type = 'button'; button.id = 'undo-action'; button.className = 'button button-quiet'; button.textContent = t("s106");
     button.addEventListener('click', restoreUndo);
     toast.appendChild(button); toast.style.pointerEvents = 'auto';
   }
@@ -268,12 +271,13 @@ function restoreUndo() {
   const slotSource = [...document.querySelectorAll(slots)].find(node => node.dataset.slotStart === snapshot.focusSlot);
   const selected = [...document.querySelectorAll('.agenda-select')].find(node => node.dataset.eventId === state.selectedEventId);
   (source || eventSource || slotSource || selected || $('route-viewport')).focus({ preventScroll: true });
-  announceAction('последнее действие отменено.');
+  announceAction(t("s107"));
 }
 
 function withCompletion(projection) {
   if (!projection) return projection;
-  const mark = (event) => ({ ...event, completed: state.completed[event.id] ?? Boolean(event.completed) });
+  const demoTitles = { 'demo-departure': 's213', 'demo-focus': 's214', 'demo-lunch': 's215', 'demo-review': 's216', 'demo-all-day': 's217' };
+  const mark = (event) => ({ ...event, title: event.source === 'demo' && demoTitles[event.baseId || event.id] && ['ru', 'en'].some(language => I18n.messages[language][demoTitles[event.baseId || event.id]] === event.title) ? t(demoTitles[event.baseId || event.id]) : event.title, completed: state.completed[event.id] ?? Boolean(event.completed) });
   return { ...projection, events: projection.events.map(mark), timedEvents: projection.timedEvents.map(mark), allDayEvents: projection.allDayEvents.map(mark) };
 }
 function refreshProjection() {
@@ -284,13 +288,13 @@ function refreshProjection() {
     }
   } catch (error) {
     state.projection = { events: [], timedEvents: [], allDayEvents: [], freeWindows: [{ startMinute: 0, endMinute: 1440, duration: 1440 }], occupiedMinutes: 0, freeMinutes: 1440, laneCount: 1 };
-    showMessage(`не удалось построить трассу: ${error.message}`, true);
+    showMessage(t("s108", error.message), true);
   }
 }
 
 function renderHeader() {
   $('day-picker').value = state.dayKey;
-  $('date-picker-label').textContent = state.dayKey.split('-').reverse().join('.');
+  $('date-picker-label').textContent = new Intl.DateTimeFormat(I18n.intlLocale, { year: 'numeric', month: '2-digit', day: '2-digit' }).format(dayDate());
   const zonePicker = $('timezone-picker');
   if (![...zonePicker.options].some(option => option.value === state.timeZone)) zonePicker.add(new Option(state.timeZone, state.timeZone));
   zonePicker.value = state.timeZone;
@@ -316,13 +320,14 @@ function renderMetrics() {
   $('metric-busy').innerHTML = metricDuration(busy);
   $('metric-free').innerHTML = metricDuration(free);
   const lanes = state.projection?.laneCount || 1;
-  $('route-note').textContent = `${lanes} ${laneWord(lanes)} / 24 часа`;
+  $('route-note').textContent = t("s109", lanes, laneWord(lanes));
 }
 function laneWord(count) {
+  if (I18n.locale === 'en') return Number(count) === 1 ? t('s111') : t('s110');
   const n = Math.abs(Number(count)) % 100;
-  if (n >= 11 && n <= 14) return 'рядов';
+  if (n >= 11 && n <= 14) return t("s110");
   const one = n % 10;
-  return one === 1 ? 'ряд' : one >= 2 && one <= 4 ? 'ряда' : 'рядов';
+  return one === 1 ? t("s111") : one >= 2 && one <= 4 ? t("s112") : t("s110");
 }
 function renderAxis() {
   const axis = $('route-axis');
@@ -365,7 +370,7 @@ function createStation(event, index) {
   copy.className = 'station-copy';
   const title = document.createElement('span');
   title.className = 'station-title';
-  title.textContent = event.title || 'без названия';
+  title.textContent = event.title || t("s64");
   const time = document.createElement('span');
   time.className = 'station-time';
   time.textContent = `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`;
@@ -386,7 +391,7 @@ function renderRoute() {
   }
   $('route-grid-lines').replaceChildren(...gridLines);
   const allDayRow = $('all-day-row');
-  const allDayBlocks = [Object.assign(document.createElement('span'), { className: 'all-day-label', textContent: 'весь день' })];
+  const allDayBlocks = [Object.assign(document.createElement('span'), { className: 'all-day-label', textContent: t("s113") })];
   allDayRow.hidden = !projection.allDayEvents.length;
   allDayRow.style.minHeight = `${Math.ceil(projection.allDayEvents.length / 2) * 39}px`;
   projection.allDayEvents.forEach((event, index) => {
@@ -399,13 +404,13 @@ function renderRoute() {
     block.textContent = `${event.completed ? '✓ ' : ''}${event.title}`;
     block.title = `${event.title} · ${durationText(event.duration)}`;
     block.setAttribute('aria-pressed', String(state.selectedEventId === event.id));
-    block.setAttribute('aria-label', `${event.title || 'без названия'}, весь день${event.completed ? ', выполнено' : ''}`);
+    block.setAttribute('aria-label', t("s115", event.title || t("s64"), event.completed ? t("s114") : ''));
     block.addEventListener('click', () => selectEvent(event.id, 'route'));
     allDayBlocks.push(block);
   });
   allDayRow.replaceChildren(...allDayBlocks);
   const freeRow = $('free-row');
-  const freeChildren = [Object.assign(document.createElement('span'), { className: 'free-label', textContent: 'свободно' })];
+  const freeChildren = [Object.assign(document.createElement('span'), { className: 'free-label', textContent: t("s35") })];
   projection.freeWindows.forEach((window) => {
     if (window.duration < 25) return;
     const item = document.createElement('button');
@@ -416,7 +421,7 @@ function renderRoute() {
     item.style.width = `${Math.max((window.duration / 1440) * 100, .8)}%`;
     item.textContent = durationText(window.duration);
     item.title = `${formatMinutes(window.startMinute)} - ${formatMinutes(window.endMinute)} · ${durationText(window.duration)}`;
-    item.setAttribute('aria-label', `добавить событие в свободное окно ${formatMinutes(window.startMinute)} - ${formatMinutes(window.endMinute)}`);
+    item.setAttribute('aria-label', t("s116", formatMinutes(window.startMinute), formatMinutes(window.endMinute)));
     item.addEventListener('click', () => openSlot(window));
     freeChildren.push(item);
   });
@@ -431,8 +436,8 @@ function renderRoute() {
   if (!projection.events.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-route';
-    const title = document.createElement('strong'); title.textContent = 'день пока пуст';
-    const copy = document.createElement('span'); copy.textContent = 'добавьте событие или загрузите календарь .ics.';
+    const title = document.createElement('strong'); title.textContent = t("s117");
+    const copy = document.createElement('span'); copy.textContent = t("s118");
     empty.append(title, copy);
     eventLaneContainer.replaceChildren(empty);
   } else {
@@ -441,7 +446,7 @@ function renderRoute() {
   updateNowLine();
   const timedCount = projection.timedEvents.length;
   const allDayCount = projection.allDayEvents.length;
-  $('route-summary').textContent = `${projection.events.length} событий, ${projection.laneCount || 1} ${laneWord(projection.laneCount || 1)} по времени${allDayCount ? `, ${allDayCount} на весь день` : ''}${timedCount ? `, ${timedCount} с расписанием` : ''}. шкала от 00:00 до 24:00.`;
+  $('route-summary').textContent = t("s121", I18n.count('summary.events', projection.events.length), projection.laneCount || 1, laneWord(projection.laneCount || 1), allDayCount ? t("s119", allDayCount) : '', timedCount ? t("s120", timedCount) : '');
 }
 function renderAvailability() {
   const slots = findAvailableSlots(state.projection?.timedEvents || [], state.slotDuration);
@@ -450,7 +455,7 @@ function renderAvailability() {
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'availability-slot';
     button.dataset.slotStart = window.startMinute;
-    button.setAttribute('aria-label', `добавить событие ${formatMinutes(window.startMinute)} - ${formatMinutes(window.slotEndMinute)}, свободно до ${formatMinutes(window.endMinute)}`);
+    button.setAttribute('aria-label', t("s122", formatMinutes(window.startMinute), formatMinutes(window.slotEndMinute), formatMinutes(window.endMinute)));
     const range = document.createElement('span'); range.className = 'availability-time';
     range.textContent = `${formatMinutes(window.startMinute)} - ${formatMinutes(window.endMinute)}`;
     const duration = document.createElement('span'); duration.className = 'availability-duration';
@@ -461,7 +466,7 @@ function renderAvailability() {
   }));
   const empty = $('availability-empty');
   empty.hidden = slots.length > 0;
-  empty.textContent = slots.length ? '' : `нет свободного окна на ${state.slotDuration} мин. выберите меньшую длительность или другой день.`;
+  empty.textContent = slots.length ? '' : t("s123", state.slotDuration);
 }
 
 function openSlot(window) {
@@ -482,7 +487,7 @@ function changeDay(dayKey) {
   state.dayKey = dayKey;
   state.selectedEventId = null;
   readStore(); render({ type: 'day', direction, focusTimeline: true });
-  announce(`выбран день ${formatDay()}.`);
+  announce(t("s124", formatDay()));
 }
 function stepDay(offset) {
   const date = dayDate();
@@ -493,6 +498,7 @@ function stepDay(offset) {
 function updateNowLine() {
   const minute = minuteNow();
   const line = $('now-line');
+  line.classList.toggle('is-near-end', minute !== null && minute > 1320);
   line.hidden = minute === null;
   if (minute !== null) line.style.left = pct(minute);
 }
@@ -515,24 +521,24 @@ function selectEvent(id, surface = 'agenda') {
   state.focusEventId = id;
   state.focusSurface = surface;
   render({ type: 'select', id });
-  const title = state.projection.events.find(event => event.id === id)?.title || 'без названия';
-  announce(`выбрано событие: ${title}.`);
+  const title = state.projection.events.find(event => event.id === id)?.title || t("s64");
+  announce(t("s125", title));
 }
 function toggleCompletion(id) {
   const event = state.projection.events.find(item => item.id === id);
   if (!event) return;
-  takeUndo('отметка выполнения');
+  takeUndo(t("s126"));
   state.completed[id] = !event.completed;
   const surface = document.activeElement?.dataset?.surface;
   saveStore(); render({ type: 'complete', id, completed: !event.completed, surface });
-  announceAction(event.completed ? 'событие снова открыто.' : 'событие отмечено выполненным.', false, true);
+  announceAction(event.completed ? t("s127") : t("s128"), false, true);
 }
 function renderAgenda() {
   const events = state.projection?.events || [];
   $('agenda-count').textContent = String(events.length);
   if (!events.length) {
     const empty = document.createElement('p');
-    empty.className = 'agenda-empty'; empty.textContent = 'здесь будут события выбранного дня.';
+    empty.className = 'agenda-empty'; empty.textContent = t("s129");
     $('agenda-list').replaceChildren(empty); return;
   }
   const rows = events.map(event => {
@@ -541,17 +547,17 @@ function renderAgenda() {
     button.dataset.eventId = event.id; button.dataset.surface = 'agenda';
     button.setAttribute('aria-pressed', String(state.selectedEventId === event.id));
     const time = document.createElement('span'); time.className = 'agenda-time';
-    const start = document.createElement('span'); start.textContent = event.allDay ? 'весь' : formatMinutes(event.startMinute);
-    const end = document.createElement('span'); end.textContent = event.allDay ? 'день' : formatMinutes(event.endMinute);
+    const start = document.createElement('span'); start.textContent = event.allDay ? t("s130") : formatMinutes(event.startMinute);
+    const end = document.createElement('span'); end.textContent = event.allDay ? t("s131") : formatMinutes(event.endMinute);
     time.append(start, end);
     const copy = document.createElement('span'); copy.className = 'agenda-copy';
-    const title = document.createElement('span'); title.className = 'agenda-name'; title.textContent = event.title || 'без названия';
+    const title = document.createElement('span'); title.className = 'agenda-name'; title.textContent = event.title || t("s64");
     const meta = document.createElement('span'); meta.className = `agenda-meta${event.overlap ? ' agenda-overlap' : ''}`;
-    meta.textContent = [event.allDay ? 'заметка на день' : durationText(event.duration), event.overlap ? 'пересечение' : event.location].filter(Boolean).join(' · ');
+    meta.textContent = [event.allDay ? t("s132") : durationText(event.duration), event.overlap ? t("s133") : event.location].filter(Boolean).join(' · ');
     copy.append(title, meta); button.append(time, copy);
     button.addEventListener('click', () => selectEvent(event.id, 'agenda'));
     const check = document.createElement('button'); check.type = 'button'; check.className = 'agenda-check';
-    check.setAttribute('aria-label', `${event.completed ? 'вернуть в день' : 'отметить выполненным'}: ${event.title || 'без названия'}`);
+    check.setAttribute('aria-label', `${event.completed ? t("s134") : t("s71")}: ${event.title || t("s64")}`);
     check.setAttribute('aria-pressed', String(event.completed));
     check.dataset.eventId = event.id; check.dataset.surface = 'check';
     renderCheck(check, event.completed);
@@ -579,7 +585,7 @@ function renderEventState() {
     const surface = node.dataset.surface;
     if (surface === 'check') {
       node.setAttribute('aria-pressed', String(event.completed));
-      node.setAttribute('aria-label', `${event.completed ? 'вернуть в день' : 'отметить выполненным'}: ${event.title || 'без названия'}`);
+      node.setAttribute('aria-label', `${event.completed ? t("s134") : t("s71")}: ${event.title || t("s64")}`);
       node.parentElement.classList.toggle('is-complete', event.completed);
       renderCheck(node, event.completed);
     } else {
@@ -587,7 +593,7 @@ function renderEventState() {
       node.classList.toggle('is-selected', selected);
       if (surface === 'route') {
         node.classList.toggle('is-complete', event.completed);
-        node.setAttribute('aria-label', `${event.title || 'без названия'}, ${event.allDay ? 'весь день' : `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`}${event.completed ? ', выполнено' : ''}`);
+        node.setAttribute('aria-label', `${event.title || t("s64")}, ${event.allDay ? t("s113") : `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`}${event.completed ? t("s114") : ''}`);
         if (event.allDay) setText(node, `${event.completed ? '✓ ' : ''}${event.title}`);
         else setText(node.querySelector('.station-token'), event.completed ? '✓' : String(timedIndices.get(event.id) + 1).padStart(2, '0'));
       }
@@ -603,20 +609,20 @@ function renderDetails() {
   panel.hidden = false;
   empty.hidden = true; details.hidden = false;
   setText($('detail-source'), sourceLabel(selected.source));
-  setText($('detail-title'), selected.title || 'без названия');
+  setText($('detail-title'), selected.title || t("s64"));
   setText($('detail-token'), selected.completed ? '✓' : String((state.projection.events.indexOf(selected) + 1)).padStart(2, '0'));
-  setText($('detail-time'), selected.allDay ? 'весь день' : `${formatMinutes(selected.startMinute)} - ${formatMinutes(selected.endMinute)}`);
+  setText($('detail-time'), selected.allDay ? t("s113") : `${formatMinutes(selected.startMinute)} - ${formatMinutes(selected.endMinute)}`);
   const originalStart = selected.originalStart || '';
   const originalEnd = selected.originalEnd || '';
-  setText($('detail-original-time'), originalStart && originalEnd ? `${originalStart} - ${originalEnd}` : (selected.allDay ? 'весь день' : 'не указано'));
-  setText($('detail-clip-note'), selected.clippedStart || selected.clippedEnd ? `обрезано границей дня${selected.clippedStart ? ' (начало)' : ''}${selected.clippedEnd ? ' (конец)' : ''}` : '');
+  setText($('detail-original-time'), originalStart && originalEnd ? `${originalStart} - ${originalEnd}` : (selected.allDay ? t("s113") : t("s66")));
+  setText($('detail-clip-note'), selected.clippedStart || selected.clippedEnd ? t("s137", selected.clippedStart ? t("s135") : '', selected.clippedEnd ? t("s136") : '') : '');
   $('original-time-row').hidden = !selected.clippedStart && !selected.clippedEnd && selected.source !== 'ics';
-  setText($('detail-duration'), selected.allDay ? 'весь день' : durationText(selected.duration));
-  setText($('detail-location'), selected.location || 'не указано');
-  setText($('detail-repeat'), selected.recurrence?.raw || selected.recurrence || (selected.allDay ? 'весь день' : 'однократно'));
+  setText($('detail-duration'), selected.allDay ? t("s113") : durationText(selected.duration));
+  setText($('detail-location'), selected.location || t("s66"));
+  setText($('detail-repeat'), selected.recurrence?.raw || selected.recurrence || (selected.allDay ? t("s113") : t("s138")));
   setText($('detail-description'), selected.description || '');
-  setText($('toggle-complete'), selected.completed ? 'вернуть в день' : 'отметить выполненным');
-  setText($('detail-status'), selected.completed ? 'выполнено' : selected.overlap ? 'пересечение. проверьте порядок' : 'впереди');
+  setText($('toggle-complete'), selected.completed ? t("s134") : t("s71"));
+  setText($('detail-status'), selected.completed ? t("s139") : selected.overlap ? t("s140") : t("s141"));
   $('edit-event').hidden = Boolean(selected.allDay);
   $('delete-event').hidden = false;
 }
@@ -631,7 +637,7 @@ function render(effect = {}) {
   renderHeader();
   renderMetrics();
   // Keep targets connected when only selection, completion or mode changes.
-  const contentKey = JSON.stringify([state.dayKey, state.timeZone, state.projection.events.map(({ completed, ...event }) => event)]);
+  const contentKey = JSON.stringify([state.dayKey, state.timeZone, I18n.locale, state.projection.events.map(({ completed, ...event }) => event)]);
   if (contentKey !== renderedContentKey) {
     renderRoute(); renderAgenda(); renderAvailability(); renderedContentKey = contentKey;
   }
@@ -644,50 +650,50 @@ function render(effect = {}) {
     state.focusShouldScroll = false;
     state.focusEventId = null;
   }
-  announce(state.projection?.events.length ? 'день с событиями' : 'пустой день');
+  announce(state.projection?.events.length ? t("s142") : t("s143"));
   if (effect.focusTimeline) focusTimeline('events', false);
   motion.play(effect, before, metrics.filter((id, index) => $(id).textContent !== oldMetrics[index]));
 }
 
 function importText(text, filename = 'calendar.ics') {
-  if (!text || !/VEVENT/i.test(text)) { showMessage('файл не похож на ics: не найден блок VEVENT.', true); announceAction('не удалось загрузить файл.', true); return; }
+  if (!text || !/VEVENT/i.test(text)) { showMessage(t("s144"), true); announceAction(t("s145"), true); return; }
   const parsed = parseIcs(text, { fallbackZone: resolvedZone() });
   parsed.errors?.forEach((error) => showMessage(error, true));
   if (parsed.events.length) {
     const valid = parsed.events.filter((event) => validRawEvent(event));
-    if (!valid.length) { showMessage('в файле не найдено корректных событий.', true); announceAction('не удалось загрузить файл.', true); return; }
-    takeUndo('импорт');
+    if (!valid.length) { showMessage(t("s146"), true); announceAction(t("s145"), true); return; }
+    takeUndo(t("s147"));
     const previousCompleted = { ...state.completed };
     state.rawEvents = valid;
     state.completed = Object.fromEntries(valid.filter((event) => previousCompleted[event.id] !== undefined).map((event) => [event.id, previousCompleted[event.id]]));
     state.selectedEventId = null;
     saveStore(true);
     render({ type: 'import', focusTimeline: true });
-    announceAction(`добавлено событий: ${valid.length}.`, false, true);
+    announceAction(t("s148", valid.length), false, true);
   } else {
-    showMessage('в файле не найдено корректных событий.', true);
-    announceAction('не удалось загрузить файл.', true);
+    showMessage(t("s146"), true);
+    announceAction(t("s145"), true);
   }
 }
 async function handleFile(file) {
   if (!file) return;
   const request = ++importRequest;
   try {
-    if (typeof File !== 'undefined' && !(file instanceof File)) { showMessage('не удалось прочитать этот файл. выберите ics.', true); return; }
-    if (Number(file.size) > MAX_IMPORT_BYTES) { showMessage('файл больше 2 мб. выберите файл поменьше.', true); announceAction('файл слишком большой.', true); return; }
+    if (typeof File !== 'undefined' && !(file instanceof File)) { showMessage(t("s149"), true); return; }
+    if (Number(file.size) > MAX_IMPORT_BYTES) { showMessage(t("s150"), true); announceAction(t("s151"), true); return; }
     setImportBusy(true);
     const text = await file.text();
     if (request !== importRequest) return;
     importText(text, file.name);
   } catch {
-    if (request === importRequest) { showMessage('не удалось прочитать файл. попробуйте другой ics.', true); announceAction('не удалось прочитать файл.', true); }
+    if (request === importRequest) { showMessage(t("s152"), true); announceAction(t("s153"), true); }
   } finally {
     if (request === importRequest) { setImportBusy(false); $('ics-file').value = ''; }
   }
 }
 function setImportBusy(busy) {
   $('drop-zone').setAttribute('aria-busy', String(busy));
-  setText($('drop-zone').querySelector('strong'), busy ? 'читаю календарь…' : 'добавить календарь .ics');
+  setText($('drop-zone').querySelector('strong'), busy ? t("s154") : t("s57"));
 }
 function cancelImport() {
   importRequest += 1;
@@ -716,7 +722,7 @@ function makeManualEvent(form) {
   const title = String(data.get('title') || '').trim();
   const start = `${data.get('startDate')}T${data.get('start') || ''}`;
   const end = `${data.get('endDate')}T${data.get('end') || ''}`;
-  if (!title) { setManualError('введите название события.', titleField); titleField?.focus(); return null; }
+  if (!title) { setManualError(t("s155"), titleField); titleField?.focus(); return null; }
   const editing = state.editingEventId && state.projection.events.find(event => event.id === state.editingEventId);
   try {
     return createTimedEvent({ id: editing?.id || stableManualId(title, start, end), title, start, end,
@@ -738,8 +744,8 @@ function openManual(slot = null) {
       form.elements.description.value = event.description || '';
       const values = getEventFormValues(event, resolvedZone());
       for (const [name, value] of Object.entries(values)) form.elements[name].value = value;
-      if (title) title.textContent = 'изменить событие';
-      if (submit) submit.textContent = 'сохранить изменения';
+      if (title) title.textContent = t("s156");
+      if (submit) submit.textContent = t("s157");
     }
   } else {
     form?.reset();
@@ -753,12 +759,12 @@ function openManual(slot = null) {
         form.elements.endDate.value = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
       }
     }
-    if (title) title.textContent = 'добавить событие';
-    if (submit) submit.textContent = 'добавить в день';
+    if (title) title.textContent = t("s15");
+    if (submit) submit.textContent = t("s89");
   }
   const editing = state.projection.events.find(event => event.id === state.editingEventId);
-  const repeatNote = editing?.recurrence && editing.id !== editing.baseId ? ' изменится только это повторение; остальные останутся прежними.' : '';
-  $('manual-context').textContent = `время в поясе: ${$('timezone-picker').selectedOptions[0].textContent}.${repeatNote}`;
+  const repeatNote = editing?.recurrence && editing.id !== editing.baseId ? t("s158") : '';
+  $('manual-context').textContent = t("s159", $('timezone-picker').selectedOptions[0].textContent, repeatNote);
   const dialog = $('manual-dialog');
   if (typeof dialog.showModal === 'function') dialog.showModal();
   else dialog.removeAttribute('hidden');
@@ -783,30 +789,30 @@ function submitManual(event) {
     const selected = state.projection.events.find(item => item.id === editing);
     events = editing ? updateOccurrence(state.rawEvents, selected, created) : [...state.rawEvents, created];
   } catch (error) { setManualError(error.message); return; }
-  takeUndo(editing ? 'изменение' : 'создание');
+  takeUndo(editing ? t("s160") : t("s161"));
   state.rawEvents = events;
   saveStore(true); closeManual();
   state.selectedEventId = created.id;
   state.focusEventId = created.id; state.focusSurface = 'agenda'; state.focusShouldScroll = true;
   cancelImport();
   render({ type: editing ? 'edit' : 'create', id: created.id }); event.currentTarget.reset(); setManualError('');
-  announceAction(editing ? 'событие изменено.' : 'событие добавлено.', false, true);
+  announceAction(editing ? t("s162") : t("s163"), false, true);
 }
 
 function deleteSelectedEvent() {
   const selected = state.projection.events.find(event => event.id === state.selectedEventId);
   if (!selected) return;
   const repeating = selected.recurrence && selected.id !== selected.baseId;
-  if (!window.confirm(repeating ? 'удалить только это повторение? остальные останутся прежними.' : 'удалить выбранное событие?')) return;
+  if (!window.confirm(repeating ? t("s164") : t("s165"))) return;
   let events;
   try { events = removeOccurrence(state.rawEvents, selected); }
   catch (error) { announceAction(error.message, true); return; }
-  takeUndo('удаление');
+  takeUndo(t("s166"));
   state.rawEvents = events;
   delete state.completed[selected.id]; state.selectedEventId = null;
   cancelImport();
   saveStore(true); render({ type: 'delete' }); $('route-viewport').focus();
-  announceAction(repeating ? 'это повторение удалено.' : 'событие удалено.', false, true);
+  announceAction(repeating ? t("s167") : t("s168"), false, true);
 }
 
 function buildExportSvg() {
@@ -827,8 +833,8 @@ function buildExportSvg() {
     `<line x1="64" y1="114" x2="1536" y2="114" stroke="#DEDFD5"/>`,
     `<text x="64" y="180" font-size="42">${escXml(formatDay())}</text>`,
     `<text x="64" y="210" class="small muted">${escXml(formatWeekday())} · ${escXml(state.dayKey.slice(0, 4))} · ${escXml(resolvedZone())}</text>`,
-    `<text x="1536" y="164" text-anchor="end" class="small">события: ${projection.events.length} · готово: ${projection.events.filter(event => event.completed).length}</text>`,
-    `<text x="1536" y="196" text-anchor="end" class="small muted">занято ${durationText(projection.occupiedMinutes)} · свободно ${durationText(projection.freeMinutes)}</text>`,
+    t("s169", projection.events.length, projection.events.filter(event => event.completed).length),
+    t("s170", durationText(projection.occupiedMinutes), durationText(projection.freeMinutes)),
     `<rect x="48" y="${chartTop}" width="1504" height="${chartBottom - chartTop}" rx="12" fill="#292D26"/>`,
   ];
   for (let hour = 0; hour <= 24; hour += 1) {
@@ -838,7 +844,7 @@ function buildExportSvg() {
   }
   projection.allDayEvents.forEach((event, index) => {
     const blockX = left + index % 2 * chartWidth / 2, y = chartTop + 51 + Math.floor(index / 2) * 42;
-    parts.push(`<clipPath id="allday-${index}"><rect x="${blockX + 10}" y="${y}" width="${chartWidth / 2 - 36}" height="32"/></clipPath>`, `<rect x="${blockX}" y="${y}" width="${chartWidth / 2 - 12}" height="32" rx="5" fill="#404836"/>`, `<text x="${blockX + 12}" y="${y + 22}" class="small" style="fill:#E6ECD9" clip-path="url(#allday-${index})">${event.completed ? '✓ ' : ''}${escXml(event.title)} · весь день</text>`);
+    parts.push(`<clipPath id="allday-${index}"><rect x="${blockX + 10}" y="${y}" width="${chartWidth / 2 - 36}" height="32"/></clipPath>`, `<rect x="${blockX}" y="${y}" width="${chartWidth / 2 - 12}" height="32" rx="5" fill="#404836"/>`, t("s171", blockX + 12, y + 22, index, event.completed ? '✓ ' : '', escXml(event.title)));
   });
   projection.freeWindows.forEach(window => parts.push(`<rect x="${x(window.startMinute)}" y="${timedTop}" width="${x(window.endMinute) - x(window.startMinute)}" height="${chartBottom - timedTop - 18}" fill="#C8DD9B" opacity=".06"/>`));
   projection.timedEvents.forEach((event, index) => {
@@ -847,17 +853,17 @@ function buildExportSvg() {
   });
   const minute = minuteNow();
   if (minute !== null) parts.push(`<line x1="${x(minute)}" y1="${chartTop + 38}" x2="${x(minute)}" y2="${chartBottom - 18}" stroke="#E96840" stroke-width="2"/>`);
-  parts.push(`<text x="64" y="${listTop - 24}" class="title">события дня</text>`);
+  parts.push(t("s172", listTop - 24));
   projection.events.forEach((event, index) => {
     const column = index % 2, row = Math.floor(index / 2), listX = left + column * 756, y = listTop + row * 62;
-    parts.push(`<clipPath id="list-${index}"><rect x="${listX + 180}" y="${y - 23}" width="540" height="35"/></clipPath>`, `<line x1="${listX}" y1="${y + 24}" x2="${listX + 720}" y2="${y + 24}" stroke="#DEDFD5"/>`, `<text x="${listX}" y="${y}" class="mono small muted">${event.allDay ? 'весь день' : `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`}</text>`, `<text x="${listX + 180}" y="${y}" font-size="20" clip-path="url(#list-${index})">${event.completed ? '✓ ' : ''}${escXml(event.title)}</text>`);
+    parts.push(`<clipPath id="list-${index}"><rect x="${listX + 180}" y="${y - 23}" width="540" height="35"/></clipPath>`, `<line x1="${listX}" y1="${y + 24}" x2="${listX + 720}" y2="${y + 24}" stroke="#DEDFD5"/>`, `<text x="${listX}" y="${y}" class="mono small muted">${event.allDay ? t("s113") : `${formatMinutes(event.startMinute)} - ${formatMinutes(event.endMinute)}`}</text>`, `<text x="${listX + 180}" y="${y}" font-size="20" clip-path="url(#list-${index})">${event.completed ? '✓ ' : ''}${escXml(event.title)}</text>`);
   });
-  if (!projection.events.length) parts.push(`<text x="64" y="${listTop}" class="small muted">день пока пуст</text>`);
-  parts.push(`<text x="64" y="${height - 38}" class="small muted">весь день на одной шкале.</text>`, '</svg>');
+  if (!projection.events.length) parts.push(t("s173", listTop));
+  parts.push(t("s174", height - 38), '</svg>');
   return parts.join('');
 }
 function downloadBlob(blob, filename) {
-  if (!blob || !URL?.createObjectURL) { showMessage('скачивание недоступно в этом браузере.', true); return false; }
+  if (!blob || !URL?.createObjectURL) { showMessage(t("s175"), true); return false; }
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a'); link.href = url; link.download = filename; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -865,12 +871,12 @@ function downloadBlob(blob, filename) {
 }
 function exportSvg() {
   if (downloadBlob(new Blob([buildExportSvg()], { type: 'image/svg+xml;charset=utf-8' }), `dayflow-arcade-${state.dayKey}.svg`)) {
-    announceAction('svg-файл готов к скачиванию.');
+    announceAction(t("s176"));
   }
 }
 function exportPng() {
   if (pngPending) return;
-  if (!URL?.createObjectURL) { showMessage('png: не удалось собрать в этом браузере.', true); announceAction('не удалось собрать png.', true); return; }
+  if (!URL?.createObjectURL) { showMessage(t("s177"), true); announceAction(t("s178"), true); return; }
   // Capture both the content and date before the asynchronous image/canvas work.
   const filename = `dayflow-arcade-${state.dayKey}.png`;
   const svgBlob = new Blob([buildExportSvg()], { type: 'image/svg+xml;charset=utf-8' });
@@ -878,12 +884,12 @@ function exportPng() {
   const image = new Image();
   const button = $('export-png');
   pngPending = true; button.setAttribute('aria-busy', 'true'); button.setAttribute('aria-disabled', 'true');
-  announceAction('png-файл готовится.');
+  announceAction(t("s179"));
   const finish = (blob = null) => {
     URL.revokeObjectURL(url); image.onload = null; image.onerror = null;
     pngPending = false; button.setAttribute('aria-busy', 'false'); button.removeAttribute('aria-disabled');
-    if (blob && downloadBlob(blob, filename)) announceAction('png-файл готов к скачиванию.');
-    else { showMessage('png: не удалось собрать в этом браузере.', true); announceAction('не удалось собрать png.', true); }
+    if (blob && downloadBlob(blob, filename)) announceAction(t("s180"));
+    else { showMessage(t("s177"), true); announceAction(t("s178"), true); }
   };
   image.onload = () => {
     try {
@@ -908,9 +914,9 @@ function bindEvents() {
   $('fit-day').addEventListener('click', () => focusTimeline('fit'));
   $('focus-events').addEventListener('click', () => focusTimeline('events'));
   $('focus-now').addEventListener('click', () => focusTimeline('now'));
-  $('slot-duration').addEventListener('change', event => { state.slotDuration = Number(event.target.value); renderAvailability(); announce(`свободные окна для события на ${state.slotDuration} мин.`); });
-  $('timezone-picker').addEventListener('change', (event) => { state.timeZone = event.target.value; saveStore(); render(); announceAction(`часовой пояс: ${event.target.options[event.target.selectedIndex]?.textContent || state.timeZone}.`); });
-  document.querySelectorAll('[data-mode-choice]').forEach((button) => button.addEventListener('click', () => { state.mode = button.dataset.modeChoice; saveStore(); render(); announceAction(`режим: ${state.mode === 'arcade' ? 'аркадный' : 'спокойный'}.`); }));
+  $('slot-duration').addEventListener('change', event => { state.slotDuration = Number(event.target.value); renderAvailability(); announce(t("s181", state.slotDuration)); });
+  $('timezone-picker').addEventListener('change', (event) => { state.timeZone = event.target.value; saveStore(); render(); announceAction(t("s182", event.target.options[event.target.selectedIndex]?.textContent || state.timeZone)); });
+  document.querySelectorAll('[data-mode-choice]').forEach((button) => button.addEventListener('click', () => { state.mode = button.dataset.modeChoice; saveStore(); render(); announceAction(t("s183", state.mode === 'arcade' ? t("s25") : t("s24"))); }));
   $('ics-file').addEventListener('change', (event) => handleFile(event.target.files?.[0]));
   const drop = $('drop-zone');
   let dragDepth = 0;
@@ -933,7 +939,7 @@ function bindEvents() {
   });
   drop.addEventListener('click', () => $('ics-file').click());
   drop.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); $('ics-file').click(); } });
-  $('load-demo').addEventListener('click', () => { cancelImport(); takeUndo('пример'); state.rawEvents = makeDemoEvents(state.dayKey, resolvedZone()); state.completed = {}; state.selectedEventId = null; saveStore(true); render({ type: 'import', focusTimeline: true }); announceAction('пример загружен.', false, true); });
+  $('load-demo').addEventListener('click', () => { cancelImport(); takeUndo(t("s90")); state.rawEvents = makeDemoEvents(state.dayKey, resolvedZone()); state.completed = {}; state.selectedEventId = null; saveStore(true); render({ type: 'import', focusTimeline: true }); announceAction(t("s184"), false, true); });
   $('open-manual').addEventListener('click', () => { state.editingEventId = null; openManual(); });
   $('close-manual').addEventListener('click', closeManual);
   $('cancel-manual').addEventListener('click', closeManual);
@@ -954,6 +960,22 @@ function bindEvents() {
   setInterval(() => { state.now = new Date(); renderHeader(); updateNowLine(); }, 30000);
 }
 
+I18n.subscribe(() => {
+  state.errors = state.errors.map(item => ({ ...item, text: I18n.retext(item.text) }));
+  setImportBusy($('drop-zone').getAttribute('aria-busy') === 'true');
+  const manualError = $('manual-form-error').textContent;
+  const context = $('manual-context').textContent;
+  const toast = $('toast').querySelector('span');
+  if (toast) toast.textContent = I18n.retext(toast.textContent);
+  if ($('undo-action')) $('undo-action').textContent = t('s106');
+  render();
+  if ($('manual-dialog').open) {
+    $('manual-title').textContent = state.editingEventId ? t('s156') : t('s15');
+    $('manual-form').querySelector('[type="submit"]').textContent = state.editingEventId ? t('s157') : t('s89');
+    $('manual-context').textContent = I18n.retext(context);
+    $('manual-form-error').textContent = I18n.retext(manualError);
+  }
+});
 readStore();
 $('day-picker').value = state.dayKey;
 bindEvents();

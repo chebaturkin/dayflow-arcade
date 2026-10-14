@@ -1,19 +1,21 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#F8F6F0">
-  <meta name="description" content="dayflow arcade: весь день на одной шкале. события, свободное время и календарь, который остаётся на вашем устройстве.">
+  <meta name="description" content="dayflow arcade: your whole day on one timeline. events, free time and a calendar that stays on your device." data-i18n-content="s1">
   <meta property="og:title" content="dayflow arcade">
-  <meta property="og:description" content="весь день на одной шкале. загрузите календарь или соберите день вручную.">
-  <meta property="og:image" content="https://chebaturkin.github.io/dayflow-arcade/docs/screenshots/desktop.png">
-  <title>dayflow arcade: календарь дня</title>
+  <meta property="og:description" content="your whole day on one timeline. import a calendar or build the day by hand." data-i18n-content="s2">
+  <meta property="og:image" content="https://chebaturkin.github.io/dayflow-arcade/docs/screenshots/en/desktop.png">
+  <meta property="og:locale" content="en_US">
+  <title data-i18n="s3">dayflow arcade: a calendar for your day</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script src="i18n.js"></script>
 </head>
 <body data-mode="calm">
-  <a class="skip-link" href="#main-content">к содержимому</a>
+  <a class="skip-link" href="#main-content" data-i18n="s4">к содержимому</a>
   <svg class="sr-only" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -29,125 +31,125 @@
   </svg>
   <div class="site-shell">
     <header class="masthead">
-      <a class="brand-block" href="./" aria-label="dayflow arcade, главная">
+      <a class="brand-block" href="./" aria-label="dayflow arcade, главная" data-i18n-aria-label="s5">
         <img src="assets/logo.svg" class="brand-mark" width="44" height="44" alt="">
         <h1>dayflow arcade</h1>
       </a>
-      <div class="masthead-right">
-        <span class="privacy-note"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg>данные на вашем устройстве</span>
-        <a class="repo-link" href="https://github.com/chebaturkin/dayflow-arcade" target="_blank" rel="noopener noreferrer" aria-label="проект на github, откроется в новой вкладке">github<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a>
+      <div class="masthead-right"><div class="locale-switch" role="group" aria-label="language"><button type="button" data-locale="ru" lang="ru" aria-label="русский" aria-pressed="false">ru</button><span aria-hidden="true">/</span><button type="button" data-locale="en" lang="en" aria-label="english" aria-pressed="false">en</button></div>
+        <span class="privacy-note"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg><span data-i18n="s6">данные на вашем устройстве</span></span>
+        <a class="repo-link" href="https://github.com/chebaturkin/dayflow-arcade" target="_blank" rel="noopener noreferrer" aria-label="проект на github, откроется в новой вкладке" data-i18n-aria-label="s7">github<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a>
       </div>
-      <span id="board-status" class="sr-only" role="status" aria-live="polite">день загружается</span>
+      <span id="board-status" class="sr-only" role="status" aria-live="polite" data-i18n="s8">день загружается</span>
     </header>
 
     <main id="main-content">
       <section class="day-header" aria-labelledby="readout-date">
         <div class="day-heading">
-          <div class="day-title"><h2 id="readout-date">загрузка</h2><span id="readout-weekday">сегодня</span></div>
-          <div class="day-navigation" aria-label="выбрать день">
-            <button type="button" class="icon-button" id="previous-day" aria-label="предыдущий день"><svg class="icon" aria-hidden="true"><use href="#icon-left"/></svg></button>
-            <label class="sr-only" for="day-picker">дата</label><div class="date-field"><span id="date-picker-label" aria-hidden="true">дата</span><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg><input id="day-picker" name="day" type="date"></div>
-            <button type="button" class="icon-button" id="next-day" aria-label="следующий день"><svg class="icon" aria-hidden="true"><use href="#icon-right"/></svg></button>
-            <button type="button" class="button button-quiet" id="today">сегодня</button>
+          <div class="day-title"><h2 id="readout-date" data-i18n="s9">загрузка</h2><span id="readout-weekday" data-i18n="s10">сегодня</span></div>
+          <div class="day-navigation" aria-label="выбрать день" data-i18n-aria-label="s11">
+            <button type="button" class="icon-button" id="previous-day" aria-label="предыдущий день" data-i18n-aria-label="s12"><svg class="icon" aria-hidden="true"><use href="#icon-left"/></svg></button>
+            <label class="sr-only" for="day-picker" data-i18n="s13">дата</label><div class="date-field"><span id="date-picker-label" aria-hidden="true" data-i18n="s13">дата</span><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg><input id="day-picker" name="day" type="date"></div>
+            <button type="button" class="icon-button" id="next-day" aria-label="следующий день" data-i18n-aria-label="s14"><svg class="icon" aria-hidden="true"><use href="#icon-right"/></svg></button>
+            <button type="button" class="button button-quiet" id="today" data-i18n="s10">сегодня</button>
           </div>
         </div>
-        <button type="button" class="button button-primary" id="open-manual"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>добавить событие</button>
+        <button type="button" class="button button-primary" id="open-manual"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg><span data-i18n="s15">добавить событие</span></button>
       </section>
 
       <section class="command-deck" aria-labelledby="controls-title">
-        <h2 id="controls-title" class="sr-only">настройки дня</h2>
+        <h2 id="controls-title" class="sr-only" data-i18n="s16">настройки дня</h2>
         <div class="control-grid">
           <div class="control-group zone-control">
-            <label for="timezone-picker">часовой пояс</label>
-            <select id="timezone-picker" name="timezone"><option value="local">местный пояс</option><option value="UTC">utc</option><option value="Europe/Moscow">москва · utc+3</option><option value="Europe/London">лондон</option><option value="America/New_York">нью-йорк</option><option value="Asia/Tokyo">токио · utc+9</option></select>
+            <label for="timezone-picker" data-i18n="s17">часовой пояс</label>
+            <select id="timezone-picker" name="timezone"><option value="local" data-i18n="s18">местный пояс</option><option value="UTC">utc</option><option value="Europe/Moscow" data-i18n="s19">москва · utc+3</option><option value="Europe/London" data-i18n="s20">лондон</option><option value="America/New_York" data-i18n="s21">нью-йорк</option><option value="Asia/Tokyo" data-i18n="s22">токио · utc+9</option></select>
           </div>
-          <div class="mode-switch" role="group" aria-label="режим отображения">
-            <button type="button" class="mode-button is-active" data-mode-choice="calm" aria-pressed="true">спокойный</button>
-            <button type="button" class="mode-button" data-mode-choice="arcade" aria-pressed="false"><span class="arcade-dot" aria-hidden="true"></span>аркадный</button>
+          <div class="mode-switch" role="group" aria-label="режим отображения" data-i18n-aria-label="s23">
+            <button type="button" class="mode-button is-active" data-mode-choice="calm" aria-pressed="true" data-i18n="s24">спокойный</button>
+            <button type="button" class="mode-button" data-mode-choice="arcade" aria-pressed="false"><span class="arcade-dot" aria-hidden="true"></span><span data-i18n="s25">аркадный</span></button>
           </div>
-          <div class="export-actions"><span>скачать день</span><button type="button" class="button button-quiet" id="export-svg" aria-label="скачать svg">svg</button><button type="button" class="button button-quiet" id="export-png" aria-label="скачать png">png</button></div>
+          <div class="export-actions"><span data-i18n="s26">скачать день</span><button type="button" class="button button-quiet" id="export-svg" aria-label="скачать svg" data-i18n-aria-label="s27">svg</button><button type="button" class="button button-quiet" id="export-png" aria-label="скачать png" data-i18n-aria-label="s28">png</button></div>
         </div>
       </section>
 
-      <section class="scoreboard" aria-label="сводка дня">
-        <dl class="metrics" aria-label="метрики дня">
-          <div class="metric"><dd id="metric-events">00</dd><dt>событий</dt></div>
-          <div class="metric"><dd id="metric-done">00</dd><dt>готово</dt></div>
-          <div class="metric"><dd id="metric-busy">0<span class="metric-unit">ч</span></dd><dt>занято</dt></div>
-          <div class="metric metric-free"><dd id="metric-free">24<span class="metric-unit">ч</span></dd><dt>свободно</dt></div>
+      <section class="scoreboard" aria-label="сводка дня" data-i18n-aria-label="s29">
+        <dl class="metrics" aria-label="метрики дня" data-i18n-aria-label="s30">
+          <div class="metric"><dd id="metric-events">00</dd><dt data-i18n="s31">событий</dt></div>
+          <div class="metric"><dd id="metric-done">00</dd><dt data-i18n="s32">готово</dt></div>
+          <div class="metric"><dd id="metric-busy">0<span class="metric-unit" data-i18n="s33">ч</span></dd><dt data-i18n="s34">занято</dt></div>
+          <div class="metric metric-free"><dd id="metric-free">24<span class="metric-unit" data-i18n="s33">ч</span></dd><dt data-i18n="s35">свободно</dt></div>
         </dl>
-        <div class="now-readout"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span>сейчас</span><strong id="readout-now">--:--</strong></div>
+        <div class="now-readout"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span data-i18n="s36">сейчас</span><strong id="readout-now">--:--</strong></div>
       </section>
 
       <section class="route-panel" aria-labelledby="route-title">
-        <div class="panel-heading route-heading"><h2 id="route-title">расписание</h2><span id="route-note" class="sr-only">24 часа</span><div class="route-actions"><button type="button" id="fit-day" aria-pressed="false">24 часа</button><button type="button" id="focus-events" aria-pressed="true">к событиям</button><button type="button" id="focus-now">сейчас<svg class="icon" aria-hidden="true"><use href="#icon-right"/></svg></button></div></div>
-        <div class="route-viewport" id="route-viewport" role="region" tabindex="0" aria-label="линия событий за день" aria-describedby="route-help route-summary">
-          <p id="route-help" class="sr-only">горизонтальная шкала: прокрутите влево или вправо, чтобы увидеть день от 00:00 до 24:00. полные названия доступны в списке событий ниже.</p>
-          <p id="route-summary" class="sr-only">события расположены по времени, свободные окна отмечены зелёным, текущий момент отмечен оранжевой линией.</p>
+        <div class="panel-heading route-heading"><h2 id="route-title" data-i18n="s37">расписание</h2><span id="route-note" class="sr-only" data-i18n="s38">24 часа</span><div class="route-actions"><button type="button" id="fit-day" aria-pressed="false" data-i18n="s38">24 часа</button><button type="button" id="focus-events" aria-pressed="true" data-i18n="s39">к событиям</button><button type="button" id="focus-now"><span data-i18n="s36">сейчас</span><svg class="icon" aria-hidden="true"><use href="#icon-right"/></svg></button></div></div>
+        <div class="route-viewport" id="route-viewport" role="region" tabindex="0" aria-label="линия событий за день" aria-describedby="route-help route-summary" data-i18n-aria-label="s40">
+          <p id="route-help" class="sr-only" data-i18n="s41">горизонтальная шкала: прокрутите влево или вправо, чтобы увидеть день от 00:00 до 24:00. полные названия доступны в списке событий ниже.</p>
+          <p id="route-summary" class="sr-only" data-i18n="s42">события расположены по времени, свободные окна отмечены зелёным, текущий момент отмечен оранжевой линией.</p>
           <div class="route-stage" id="route-stage">
-            <div class="route-axis" id="route-axis" role="img" aria-label="шкала времени от 00:00 до 24:00"></div>
+            <div class="route-axis" id="route-axis" role="img" aria-label="шкала времени от 00:00 до 24:00" data-i18n-aria-label="s43"></div>
             <div class="route-grid-lines" id="route-grid-lines" aria-hidden="true"></div>
-            <div class="all-day-row" id="all-day-row" role="region" aria-label="события на весь день"></div>
-            <div class="free-row" id="free-row" role="region" aria-label="свободные окна"></div>
-            <div class="event-lanes" id="event-lanes" role="group" aria-label="события по времени"></div>
-            <div class="now-line" id="now-line" hidden><span>сейчас</span></div>
+            <div class="all-day-row" id="all-day-row" role="region" aria-label="события на весь день" data-i18n-aria-label="s44"></div>
+            <div class="free-row" id="free-row" role="region" aria-label="свободные окна" data-i18n-aria-label="s45"></div>
+            <div class="event-lanes" id="event-lanes" role="group" aria-label="события по времени" data-i18n-aria-label="s46"></div>
+            <div class="now-line" id="now-line" hidden><span data-i18n="s36">сейчас</span></div>
           </div>
         </div>
-        <div class="route-foot"><ul class="route-legend" aria-label="легенда расписания"><li><i class="legend-swatch swatch-station" aria-hidden="true"></i>событие</li><li><i class="legend-swatch swatch-free" aria-hidden="true"></i>свободно</li><li><i class="legend-swatch swatch-now" aria-hidden="true"></i>сейчас</li><li><i class="legend-swatch swatch-done" aria-hidden="true"></i>готово</li></ul><span class="scroll-hint">двигайте шкалу ↔</span></div>
+        <div class="route-foot"><ul class="route-legend" aria-label="легенда расписания" data-i18n-aria-label="s47"><li><i class="legend-swatch swatch-station" aria-hidden="true"></i><span data-i18n="s48">событие</span></li><li><i class="legend-swatch swatch-free" aria-hidden="true"></i><span data-i18n="s35">свободно</span></li><li><i class="legend-swatch swatch-now" aria-hidden="true"></i><span data-i18n="s36">сейчас</span></li><li><i class="legend-swatch swatch-done" aria-hidden="true"></i><span data-i18n="s32">готово</span></li></ul><span class="scroll-hint" data-i18n="s49">двигайте шкалу ↔</span></div>
       </section>
 
       <section class="availability-panel" aria-labelledby="availability-title">
-        <div class="availability-heading"><h2 id="availability-title">свободные окна</h2><label for="slot-duration">время для события<select id="slot-duration"><option value="30">30 мин</option><option value="60">60 мин</option><option value="90">90 мин</option></select></label></div>
-        <p class="availability-help">выберите окно, и время появится в форме.</p>
+        <div class="availability-heading"><h2 id="availability-title" data-i18n="s45">свободные окна</h2><label for="slot-duration"><span data-i18n="s50">время для события</span><select id="slot-duration"><option value="30" data-i18n="s51">30 мин</option><option value="60" data-i18n="s52">60 мин</option><option value="90" data-i18n="s53">90 мин</option></select></label></div>
+        <p class="availability-help" data-i18n="s54">выберите окно, и время появится в форме.</p>
         <div id="availability-list" class="availability-list"></div>
         <p id="availability-empty" class="availability-empty" role="status" hidden></p>
       </section>
 
       <section class="import-deck" aria-labelledby="import-title">
-        <h2 id="import-title" class="sr-only">добавить календарь</h2>
+        <h2 id="import-title" class="sr-only" data-i18n="s55">добавить календарь</h2>
         <div class="import-layout">
-          <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="выбрать ics-файл" aria-controls="ics-file" aria-describedby="drop-help">
+          <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="выбрать ics-файл" aria-controls="ics-file" aria-describedby="drop-help" data-i18n-aria-label="s56">
             <span class="upload-icon"><svg class="icon" aria-hidden="true"><use href="#icon-upload"/></svg></span>
-            <div><strong>добавить календарь .ics</strong><p id="drop-help">перетащите файл сюда или нажмите для выбора</p></div>
+            <div><strong data-i18n="s57">добавить календарь .ics</strong><p id="drop-help" data-i18n="s58">перетащите файл сюда или нажмите для выбора</p></div>
             <svg class="icon upload-arrow" aria-hidden="true"><use href="#icon-arrow"/></svg>
             <input id="ics-file" type="file" accept=".ics,text/calendar,text/plain" hidden>
           </div>
-          <button type="button" class="button button-quiet" id="load-demo">загрузить пример<svg class="icon" aria-hidden="true"><use href="#icon-right"/></svg></button>
+          <button type="button" class="button button-quiet" id="load-demo"><span data-i18n="s59">загрузить пример</span><svg class="icon" aria-hidden="true"><use href="#icon-right"/></svg></button>
         </div>
         <div class="message-stack" id="message-stack" aria-live="polite"></div>
       </section>
 
       <div class="day-bottom">
-        <section class="agenda-panel" aria-labelledby="agenda-title"><div class="panel-heading"><h2 id="agenda-title">события</h2><span id="agenda-count" class="panel-count">0</span></div><div id="agenda-list" class="agenda-list"></div></section>
+        <section class="agenda-panel" aria-labelledby="agenda-title"><div class="panel-heading"><h2 id="agenda-title" data-i18n="s60">события</h2><span id="agenda-count" class="panel-count">0</span></div><div id="agenda-list" class="agenda-list"></div></section>
         <section class="details-panel" id="details-panel" aria-labelledby="details-title">
-          <div class="panel-heading"><h2 id="details-title">детали события</h2><span id="detail-source" class="source-note" hidden></span></div>
-          <div id="details-empty" class="details-empty"><img src="assets/logo.svg" alt="" width="48" height="48"><p>выберите событие на шкале или в списке.<br>здесь можно посмотреть детали и изменить запись.</p></div>
+          <div class="panel-heading"><h2 id="details-title" data-i18n="s61">детали события</h2><span id="detail-source" class="source-note" hidden></span></div>
+          <div id="details-empty" class="details-empty"><img src="assets/logo.svg" alt="" width="48" height="48"><p><span data-i18n="s62">выберите событие на шкале или в списке.</span><br><span data-i18n="s63">здесь можно посмотреть детали и изменить запись.</span></p></div>
           <article id="event-details" class="event-details" hidden>
-            <div class="details-header"><h3 id="detail-title">без названия</h3><span class="detail-token" id="detail-token" aria-hidden="true">01</span></div>
+            <div class="details-header"><h3 id="detail-title" data-i18n="s64">без названия</h3><span class="detail-token" id="detail-token" aria-hidden="true">01</span></div>
             <div class="detail-grid">
-              <div><span class="detail-label">время</span><strong id="detail-time">не указано</strong><span id="detail-clip-note" class="detail-subvalue"></span></div>
-              <div><span class="detail-label">длительность</span><strong id="detail-duration">не указано</strong></div>
-              <div><span class="detail-label">место</span><strong id="detail-location">не указано</strong></div>
-              <div><span class="detail-label">повтор</span><strong id="detail-repeat">не указано</strong></div>
+              <div><span class="detail-label" data-i18n="s65">время</span><strong id="detail-time" data-i18n="s66">не указано</strong><span id="detail-clip-note" class="detail-subvalue"></span></div>
+              <div><span class="detail-label" data-i18n="s67">длительность</span><strong id="detail-duration" data-i18n="s66">не указано</strong></div>
+              <div><span class="detail-label" data-i18n="s68">место</span><strong id="detail-location" data-i18n="s66">не указано</strong></div>
+              <div><span class="detail-label" data-i18n="s69">повтор</span><strong id="detail-repeat" data-i18n="s66">не указано</strong></div>
             </div>
-            <div class="detail-original-time" id="original-time-row"><span class="detail-label">исходное время</span><strong id="detail-original-time">не указано</strong></div>
+            <div class="detail-original-time" id="original-time-row"><span class="detail-label" data-i18n="s70">исходное время</span><strong id="detail-original-time" data-i18n="s66">не указано</strong></div>
             <p id="detail-description" class="detail-description"></p>
-            <div class="detail-actions"><button type="button" class="button button-dark" id="toggle-complete">отметить выполненным</button><button type="button" class="button button-quiet" id="edit-event" aria-label="изменить выбранное событие">изменить</button><button type="button" class="button button-quiet button-danger" id="delete-event" aria-label="удалить выбранное событие">удалить</button></div>
+            <div class="detail-actions"><button type="button" class="button button-dark" id="toggle-complete" data-i18n="s71">отметить выполненным</button><button type="button" class="button button-quiet" id="edit-event" aria-label="изменить выбранное событие" data-i18n-aria-label="s72" data-i18n="s73">изменить</button><button type="button" class="button button-quiet button-danger" id="delete-event" aria-label="удалить выбранное событие" data-i18n-aria-label="s74" data-i18n="s75">удалить</button></div>
             <span id="detail-status" class="detail-status"></span>
           </article>
         </section>
       </div>
     </main>
-    <footer class="site-footer"><span>весь день на одной шкале.</span><span><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg>календарь хранится только в этом браузере</span></footer>
+    <footer class="site-footer"><span data-i18n="s76">весь день на одной шкале.</span><span><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg><span data-i18n="s77">календарь хранится только в этом браузере</span></span></footer>
   </div>
 
   <dialog id="manual-dialog" class="manual-dialog" aria-labelledby="manual-title">
-    <form method="dialog" id="manual-form" aria-describedby="manual-context manual-form-error">
-      <div class="dialog-head"><h2 id="manual-title">добавить событие</h2><button type="button" class="icon-button" id="close-manual" aria-label="закрыть">×</button></div>
+    <form method="dialog" id="manual-form" novalidate aria-describedby="manual-context manual-form-error">
+      <div class="dialog-head"><h2 id="manual-title" data-i18n="s15">добавить событие</h2><div class="locale-switch" role="group" aria-label="language"><button type="button" data-locale="ru" lang="ru" aria-label="русский" aria-pressed="false">ru</button><span aria-hidden="true">/</span><button type="button" data-locale="en" lang="en" aria-label="english" aria-pressed="false">en</button></div><button type="button" class="icon-button" id="close-manual" aria-label="закрыть" data-i18n-aria-label="s78">×</button></div>
       <p id="manual-context" class="manual-context"></p>
-      <div class="form-grid"><label>название<input name="title" required maxlength="500" placeholder="например, работа над проектом"></label><div class="form-pair"><label>дата начала<input name="startDate" type="date" required></label><label>дата конца<input name="endDate" type="date" required></label></div><div class="form-pair"><label>начало<input name="start" type="time" step="1" required></label><label>конец<input name="end" type="time" step="1" required></label></div><label>место<input name="location" placeholder="кабинет, ссылка или адрес"></label><label>заметка<textarea name="description" rows="3" placeholder="что важно помнить"></textarea></label></div>
+      <div class="form-grid"><label><span data-i18n="s79">название</span><input name="title" required maxlength="500" placeholder="например, работа над проектом" data-i18n-placeholder="s80"></label><div class="form-pair"><label><span data-i18n="s81">дата начала</span><input name="startDate" type="date" required></label><label><span data-i18n="s82">дата конца</span><input name="endDate" type="date" required></label></div><div class="form-pair"><label><span data-i18n="s83">начало</span><input name="start" type="time" step="1" required></label><label><span data-i18n="s84">конец</span><input name="end" type="time" step="1" required></label></div><label><span data-i18n="s68">место</span><input name="location" placeholder="кабинет, ссылка или адрес" data-i18n-placeholder="s85"></label><label><span data-i18n="s86">заметка</span><textarea name="description" rows="3" placeholder="что важно помнить" data-i18n-placeholder="s87"></textarea></label></div>
       <p id="manual-form-error" class="form-error" role="alert" aria-live="assertive"></p>
-      <div class="dialog-actions"><button type="button" class="button button-quiet" id="cancel-manual">отмена</button><button type="submit" class="button button-primary">добавить в день</button></div>
+      <div class="dialog-actions"><button type="button" class="button button-quiet" id="cancel-manual" data-i18n="s88">отмена</button><button type="submit" class="button button-primary" data-i18n="s89">добавить в день</button></div>
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
