@@ -1,8 +1,8 @@
+**english** · [русский](README.ru.md)
+
 <p><img src="assets/wordmark.svg" alt="dayflow arcade" width="420"></p>
 
 # dayflow arcade
-
-english · [русский](README.ru.md)
 
 your whole day on one timeline. import a calendar, see free slots and put together a schedule you can read at a glance.
 
@@ -37,7 +37,9 @@ calm mode keeps the emphasis on the schedule. arcade adds a dotted texture, cris
 <summary>arcade mode, mobile screen and event form</summary>
 
 ![the timeline in arcade mode](docs/screenshots/en/arcade.png)
+
 <p><img src="docs/screenshots/en/mobile.png" alt="calendar on a phone" width="300"></p>
+
 ![the add event form](docs/screenshots/en/event-dialog.png)
 
 </details>
@@ -56,7 +58,7 @@ no build or dependency installation is needed for the app:
 python3 -m http.server 4173
 ```
 
-open [localhost:4173](http://localhost:4173). `file://` cannot run the app because browsers block modules loaded directly from a local file.
+open the [local calendar in english](http://127.0.0.1:4173/?lang=en). `file://` cannot run the app because browsers block modules loaded directly from a local file.
 
 ## calendar support
 
@@ -75,24 +77,34 @@ node --check js/calendar-core.js
 node --check js/motion.js
 ```
 
-browser tests need python with playwright and chromium. keep the local server running, then run:
+browser tests need playwright and chromium for python and node.js. install the optional tools in the repository root:
 
 ```bash
-DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/browser_smoke.py
-DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/calendar_usability.py
-DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/browser_motion.py
+python3 -m venv .venv
+.venv/bin/python -m pip install playwright
+.venv/bin/python -m playwright install chromium
+npm install --no-save --package-lock=false playwright
+npx playwright install chromium
+```
+
+keep the local server running, then run:
+
+```bash
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 .venv/bin/python tests/browser_smoke.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 .venv/bin/python tests/calendar_usability.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 .venv/bin/python tests/browser_motion.py
 DAYFLOW_BASE_URL=http://127.0.0.1:4173 node tests/i18n-browser.cjs
 ```
 
 checks cover imports, creation and editing, completion, undo, day navigation, legacy data, two tabs, exports, free slots, recurrence, time zones, motion and both languages. readme screenshots come from the running application with demo data. update both language sets with:
 
 ```bash
-DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/capture_screenshots.py
+DAYFLOW_BASE_URL=http://127.0.0.1:4173 .venv/bin/python tests/capture_screenshots.py
 ```
 
 ## publication
 
-[github pages](https://chebaturkin.github.io/dayflow-arcade/) updates after changes reach `main`. the workflow is [`.github/workflows/pages.yml`](.github/workflows/pages.yml). for your own repository, select **github actions** in **settings → pages**.
+[github pages](https://chebaturkin.github.io/dayflow-arcade/?lang=en) updates after changes reach `main`. the workflow is [`.github/workflows/pages.yml`](.github/workflows/pages.yml). for your own repository, select **github actions** in **settings → pages**.
 
 ## project structure
 
@@ -105,4 +117,13 @@ DAYFLOW_BASE_URL=http://127.0.0.1:4173 python3 tests/capture_screenshots.py
 - `assets/logo.svg`: the day loop and current time mark.
 - `assets/fonts/`: local fonts and licenses.
 
-inspirations, reviewed implementations, licenses and design decisions are in the [research notes](docs/research/2026-10-14-calendar-improvements.md).
+## fonts and references
+
+the app uses local pt sans and ibm plex mono. attribution and the font license link are in [`assets/fonts/README.md`](assets/fonts/README.md).
+
+these references informed free-slot selection and editing individual occurrences. their code and assets are not included:
+
+- [fullcalendar range selection](https://github.com/fullcalendar/fullcalendar/blob/5160c2c953c349996b0e34a09faa77b759995a2b/packages/preact/src/interaction-plugin/interactions/DateSelecting.ts): validate a chosen range before creating an event; [mit, standard edition](https://github.com/fullcalendar/fullcalendar/blob/5160c2c953c349996b0e34a09faa77b759995a2b/LICENSE.md).
+- [toast ui calendar event form](https://github.com/nhn/tui.calendar/blob/b53e765e8d896ab7c63d9b9b9515904119a72f46/apps/calendar/src/hooks/calendar/useEventFormPopup.tsx): carry selected times into the form; [mit](https://github.com/nhn/tui.calendar/blob/b53e765e8d896ab7c63d9b9b9515904119a72f46/LICENSE).
+- [cal.diy slot calculation](https://github.com/calcom/cal.diy/blob/54343aa685ae8f33159d2f485ec4a57bad5c574a/packages/features/schedules/lib/slots.ts): fit the selected duration into available time; [mit for the referenced revision](https://github.com/calcom/cal.diy/blob/54343aa685ae8f33159d2f485ec4a57bad5c574a/LICENSE).
+- [ical.js occurrence details](https://github.com/kewisch/ical.js/blob/33ba266282fac7c721d792e04124513df73fe140/lib/ical/event.js): keep a series separate from its exceptions; [mpl-2.0](https://github.com/kewisch/ical.js/blob/33ba266282fac7c721d792e04124513df73fe140/LICENSE).

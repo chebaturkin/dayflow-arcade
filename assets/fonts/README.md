@@ -1,9 +1,10 @@
 # локальные шрифты
 
-шрифты из google fonts включены в проект, поэтому после загрузки интерфейс сохраняет типографику без сети:
+в проект включены четыре файла из google fonts: pt sans обычного и полужирного начертания, ibm plex mono обычного и среднего начертания. после загрузки интерфейс сохраняет типографику без сети.
 
-- pt sans и pt sans narrow: Copyright © 2010–2024 ParaType, SIL Open Font License 1.1.
-- ibm plex mono: Copyright © 2017 IBM Corp., SIL Open Font License 1.1.
-- archivo narrow и sometype mono: SIL Open Font License 1.1.
+исходные уведомления из файлов шрифтов:
 
-[текст лицензии](https://scripts.sil.org/OFL).
+- pt sans: `Copyright © 2009 ParaType Ltd. All rights reserved.`
+- ibm plex mono: `Copyright 2017 IBM Corp. All rights reserved.`
+
+тексты sil open font license 1.1 сохранены рядом: [pt sans](OFL-PT-Sans.txt) и [ibm plex mono](OFL-IBM-Plex-Mono.txt). исходники лицензий: [google fonts, pt sans](https://github.com/google/fonts/blob/main/ofl/ptsans/OFL.txt) и [google fonts, ibm plex mono](https://github.com/google/fonts/blob/main/ofl/ibmplexmono/OFL.txt).

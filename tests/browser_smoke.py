@@ -250,7 +250,7 @@ with sync_playwright() as p:
     expect(first.locator('.agenda-name').filter(has_text='событие из другой вкладки')).to_have_count(1)
     tabs_context.close()
 
-    page.screenshot(path="/tmp/dayflow-smoke.png", full_page=True)
+    page.screenshot(path=str(Path(tempfile.gettempdir()) / 'dayflow-smoke.png'), full_page=True)
     assert not console_errors, console_errors
     browser.close()
     print("browser smoke: PASS")

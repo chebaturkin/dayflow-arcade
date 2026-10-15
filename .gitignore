@@ -1,2 +1,12 @@
-.research-tmp/
+.DS_Store
+/node_modules/
+/.venv/
 __pycache__/
+
+# Local author and agent notes
+AGENTS.md
+AGENT_PROMPT.md
+docs/superpowers/
+.codex/
+.superpowers/
+.worktrees/
